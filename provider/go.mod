@@ -1,13 +1,15 @@
-module github.com/pulumi/pulumi-xyz
+module github.com/pulumi/pulumi-metabase
 
-go 1.17
+go 1.18
 
 require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/pkg/errors v0.9.1
 	github.com/pulumi/pulumi-aws/sdk/v4 v4.0.0
+	github.com/pulumi/pulumi-aws/sdk/v5 v5.9.2
+	github.com/pulumi/pulumi-random/sdk/v4 v4.8.0
 	github.com/pulumi/pulumi/pkg/v3 v3.30.0
-	github.com/pulumi/pulumi/sdk/v3 v3.30.0
+	github.com/pulumi/pulumi/sdk/v3 v3.34.1
 )
 
 require (
@@ -74,7 +76,7 @@ require (
 	github.com/kevinburke/ssh_config v0.0.0-20190725054713-01f96b0aa0cd // indirect
 	github.com/mattn/go-colorable v0.1.6 // indirect
 	github.com/mattn/go-ieproxy v0.0.1 // indirect
-	github.com/mattn/go-isatty v0.0.12 // indirect
+	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/mattn/go-runewidth v0.0.8 // indirect
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
 	github.com/mitchellh/copystructure v1.0.0 // indirect

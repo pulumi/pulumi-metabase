@@ -14,8 +14,11 @@
     },
     "files": [
         "index.ts",
+        "metabase.ts",
         "provider.ts",
-        "staticPage.ts",
+        "types/index.ts",
+        "types/input.ts",
+        "types/output.ts",
         "utilities.ts"
     ]
 }

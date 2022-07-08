@@ -1,4 +1,4 @@
-import * as xyz from "@pulumi/xyz";
+import * as xyz from "@pulumi/metabase";
 
 const page = new xyz.StaticPage("page", {
     indexContent: "<html><body><p>Hello world!</p></body></html>",

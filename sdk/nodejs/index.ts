@@ -5,31 +5,38 @@ import * as pulumi from "@pulumi/pulumi";
 import * as utilities from "./utilities";
 
 // Export members:
+export * from "./metabase";
 export * from "./provider";
-export * from "./staticPage";
+
+// Export sub-modules:
+import * as types from "./types";
+
+export {
+    types,
+};
 
 // Import resources to register:
-import { StaticPage } from "./staticPage";
+import { Metabase } from "./metabase";
 
 const _module = {
     version: utilities.getVersion(),
     construct: (name: string, type: string, urn: string): pulumi.Resource => {
         switch (type) {
-            case "xyz:index:StaticPage":
-                return new StaticPage(name, <any>undefined, { urn })
+            case "metabase:index:Metabase":
+                return new Metabase(name, <any>undefined, { urn })
             default:
                 throw new Error(`unknown resource type ${type}`);
         }
     },
 };
-pulumi.runtime.registerResourceModule("xyz", "index", _module)
+pulumi.runtime.registerResourceModule("metabase", "index", _module)
 
 import { Provider } from "./provider";
 
-pulumi.runtime.registerResourcePackage("xyz", {
+pulumi.runtime.registerResourcePackage("metabase", {
     version: utilities.getVersion(),
     constructProvider: (name: string, type: string, urn: string): pulumi.ProviderResource => {
-        if (type !== "pulumi:providers:xyz") {
+        if (type !== "pulumi:providers:metabase") {
             throw new Error(`unknown provider type ${type}`);
         }
         return new Provider(name, <any>undefined, { urn });

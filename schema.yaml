@@ -1,39 +1,105 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/pulumi/pulumi/master/pkg/codegen/schema/pulumi.json
 ---
-name: xyz
+name: metabase
+types:
+  metabase:index:EmailConfig:
+    description: |
+      The email configuration (if any) for Metabase.
+
+      Adding email integration enables users to set alerts and system notifications.
+
+      https://www.metabase.com/docs/latest/administration-guide/02-setting-up-email.html
+    type: object
+    properties:
+      host:
+        type: string
+      port:
+        type: number
+      security:
+        type: string
+      username:
+        type: string
+      password:
+        type: string
 resources:
-  xyz:index:StaticPage:
+  metabase:index:Metabase:
     isComponent: true
     inputProperties:
-      indexContent:
+      vpcId:
         type: string
-        description: The HTML content for index.html.
+        description: The VPC to use for the Metabase cluster.
+      ecsSubnetIds:
+        description: The subnets to use for the Fargate task.
+        type: array
+        items:
+          type: string
+      dbSubnetIds:
+        description: The subnets to use for the RDS instance.
+        type: array
+        items:
+          type: string
+      lbSubnetIds:
+        description: The subnets to use for the load balancer.
+        type: array
+        items:
+          type: string
+      hostedZoneName:
+        description: A hosted zone name in which to provision DNS records.
+        type: string
+      domainName:
+        description: The domain name on which to serve Metabase.  Must be a subdomain of the hostedZoneId.
+        type: string
+      metabaseVersion:
+        description: The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
+        type: string
+      emailConfig:
+        description: |
+          The email configuration (if any) for Metabase.
+
+          Adding email integration enables users to set alerts and system notifications.
+
+          https://www.metabase.com/docs/latest/administration-guide/02-setting-up-email.html
+        $ref: "#/types/metabase:index:EmailConfig"
+      oidcClientId:
+        description: Client ID for OIDC auth for the load balancer.
+        type: string
+      oidcClientSecret:
+        description: Client secret for OIDC auth for the load balancer.
+        type: string
     requiredInputs:
-      - indexContent
+      - vpcId
+      - ecsSubnetIds
+      - dbSubnetIds
+      - lbSubnetIds
+      - hostedZoneName
+      - domainName
+      - oidcClientId
+      - oidcClientSecret
     properties:
-      bucket:
-        "$ref": "/aws/v4.0.0/schema.json#/resources/aws:s3%2Fbucket:Bucket"
-        description: The bucket resource.
-      websiteUrl:
+      dnsName:
         type: string
-        description: The website URL.
+        description: The DNS name for the Metabase instance.
+      securityGroupId:
+        type: string
+        description: The security group id for the Metabase instance.
     required:
-      - bucket
-      - websiteUrl
+      - dnsName
+      - securityGroupId
+
 language:
   csharp:
     packageReferences:
       Pulumi: 3.*
-      Pulumi.Aws: 4.*
+      Pulumi.Aws: 5.*
   go:
     generateResourceContainerTypes: true
-    importBasePath: github.com/pulumi/pulumi-xyz/sdk/go/xyz
+    importBasePath: github.com/pulumi/pulumi-metabase/sdk/go/metabase
   nodejs:
     dependencies:
-      "@pulumi/aws": "^4.0.0"
+      "@pulumi/aws": "^5.0.0"
     devDependencies:
       typescript: "^3.7.0"
   python:
     requires:
       pulumi: ">=3.0.0,<4.0.0"
-      pulumi-aws: ">=4.0.0,<5.0.0"
+      pulumi-aws: ">=5.0.0,<6.0.0"
