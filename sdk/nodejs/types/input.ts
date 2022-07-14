@@ -5,6 +5,14 @@ import * as pulumi from "@pulumi/pulumi";
 import { input as inputs, output as outputs } from "../types";
 
 /**
+ * Options for setting a custom domain.
+ */
+export interface CustomDomainArgs {
+    DomainName?: pulumi.Input<string>;
+    hostedZoneName?: pulumi.Input<string>;
+}
+
+/**
  * The email configuration (if any) for Metabase.
  *
  * Adding email integration enables users to set alerts and system notifications.

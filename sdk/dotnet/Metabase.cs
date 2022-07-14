@@ -52,6 +52,9 @@ namespace Pulumi.Metabase
 
     public sealed class MetabaseArgs : Pulumi.ResourceArgs
     {
+        [Input("customDomain")]
+        public Input<Inputs.CustomDomainArgs>? CustomDomain { get; set; }
+
         [Input("dbSubnetIds", required: true)]
         private InputList<string>? _dbSubnetIds;
 
@@ -63,12 +66,6 @@ namespace Pulumi.Metabase
             get => _dbSubnetIds ?? (_dbSubnetIds = new InputList<string>());
             set => _dbSubnetIds = value;
         }
-
-        /// <summary>
-        /// The domain name on which to serve Metabase.  Must be a subdomain of the hostedZoneId.
-        /// </summary>
-        [Input("domainName", required: true)]
-        public Input<string> DomainName { get; set; } = null!;
 
         [Input("ecsSubnetIds", required: true)]
         private InputList<string>? _ecsSubnetIds;
@@ -92,12 +89,6 @@ namespace Pulumi.Metabase
         [Input("emailConfig")]
         public Input<Inputs.EmailConfigArgs>? EmailConfig { get; set; }
 
-        /// <summary>
-        /// A hosted zone name in which to provision DNS records.
-        /// </summary>
-        [Input("hostedZoneName", required: true)]
-        public Input<string> HostedZoneName { get; set; } = null!;
-
         [Input("lbSubnetIds", required: true)]
         private InputList<string>? _lbSubnetIds;
 
@@ -115,18 +106,6 @@ namespace Pulumi.Metabase
         /// </summary>
         [Input("metabaseVersion")]
         public Input<string>? MetabaseVersion { get; set; }
-
-        /// <summary>
-        /// Client ID for OIDC auth for the load balancer.
-        /// </summary>
-        [Input("oidcClientId", required: true)]
-        public Input<string> OidcClientId { get; set; } = null!;
-
-        /// <summary>
-        /// Client secret for OIDC auth for the load balancer.
-        /// </summary>
-        [Input("oidcClientSecret", required: true)]
-        public Input<string> OidcClientSecret { get; set; } = null!;
 
         /// <summary>
         /// The VPC to use for the Metabase cluster.

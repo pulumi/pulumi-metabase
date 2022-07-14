@@ -10,6 +10,157 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
+// Options for setting a custom domain.
+type CustomDomain struct {
+	DomainName     *string `pulumi:"DomainName"`
+	HostedZoneName *string `pulumi:"hostedZoneName"`
+}
+
+// CustomDomainInput is an input type that accepts CustomDomainArgs and CustomDomainOutput values.
+// You can construct a concrete instance of `CustomDomainInput` via:
+//
+//          CustomDomainArgs{...}
+type CustomDomainInput interface {
+	pulumi.Input
+
+	ToCustomDomainOutput() CustomDomainOutput
+	ToCustomDomainOutputWithContext(context.Context) CustomDomainOutput
+}
+
+// Options for setting a custom domain.
+type CustomDomainArgs struct {
+	DomainName     pulumi.StringPtrInput `pulumi:"DomainName"`
+	HostedZoneName pulumi.StringPtrInput `pulumi:"hostedZoneName"`
+}
+
+func (CustomDomainArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*CustomDomain)(nil)).Elem()
+}
+
+func (i CustomDomainArgs) ToCustomDomainOutput() CustomDomainOutput {
+	return i.ToCustomDomainOutputWithContext(context.Background())
+}
+
+func (i CustomDomainArgs) ToCustomDomainOutputWithContext(ctx context.Context) CustomDomainOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(CustomDomainOutput)
+}
+
+func (i CustomDomainArgs) ToCustomDomainPtrOutput() CustomDomainPtrOutput {
+	return i.ToCustomDomainPtrOutputWithContext(context.Background())
+}
+
+func (i CustomDomainArgs) ToCustomDomainPtrOutputWithContext(ctx context.Context) CustomDomainPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(CustomDomainOutput).ToCustomDomainPtrOutputWithContext(ctx)
+}
+
+// CustomDomainPtrInput is an input type that accepts CustomDomainArgs, CustomDomainPtr and CustomDomainPtrOutput values.
+// You can construct a concrete instance of `CustomDomainPtrInput` via:
+//
+//          CustomDomainArgs{...}
+//
+//  or:
+//
+//          nil
+type CustomDomainPtrInput interface {
+	pulumi.Input
+
+	ToCustomDomainPtrOutput() CustomDomainPtrOutput
+	ToCustomDomainPtrOutputWithContext(context.Context) CustomDomainPtrOutput
+}
+
+type customDomainPtrType CustomDomainArgs
+
+func CustomDomainPtr(v *CustomDomainArgs) CustomDomainPtrInput {
+	return (*customDomainPtrType)(v)
+}
+
+func (*customDomainPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**CustomDomain)(nil)).Elem()
+}
+
+func (i *customDomainPtrType) ToCustomDomainPtrOutput() CustomDomainPtrOutput {
+	return i.ToCustomDomainPtrOutputWithContext(context.Background())
+}
+
+func (i *customDomainPtrType) ToCustomDomainPtrOutputWithContext(ctx context.Context) CustomDomainPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(CustomDomainPtrOutput)
+}
+
+// Options for setting a custom domain.
+type CustomDomainOutput struct{ *pulumi.OutputState }
+
+func (CustomDomainOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*CustomDomain)(nil)).Elem()
+}
+
+func (o CustomDomainOutput) ToCustomDomainOutput() CustomDomainOutput {
+	return o
+}
+
+func (o CustomDomainOutput) ToCustomDomainOutputWithContext(ctx context.Context) CustomDomainOutput {
+	return o
+}
+
+func (o CustomDomainOutput) ToCustomDomainPtrOutput() CustomDomainPtrOutput {
+	return o.ToCustomDomainPtrOutputWithContext(context.Background())
+}
+
+func (o CustomDomainOutput) ToCustomDomainPtrOutputWithContext(ctx context.Context) CustomDomainPtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v CustomDomain) *CustomDomain {
+		return &v
+	}).(CustomDomainPtrOutput)
+}
+
+func (o CustomDomainOutput) DomainName() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v CustomDomain) *string { return v.DomainName }).(pulumi.StringPtrOutput)
+}
+
+func (o CustomDomainOutput) HostedZoneName() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v CustomDomain) *string { return v.HostedZoneName }).(pulumi.StringPtrOutput)
+}
+
+type CustomDomainPtrOutput struct{ *pulumi.OutputState }
+
+func (CustomDomainPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**CustomDomain)(nil)).Elem()
+}
+
+func (o CustomDomainPtrOutput) ToCustomDomainPtrOutput() CustomDomainPtrOutput {
+	return o
+}
+
+func (o CustomDomainPtrOutput) ToCustomDomainPtrOutputWithContext(ctx context.Context) CustomDomainPtrOutput {
+	return o
+}
+
+func (o CustomDomainPtrOutput) Elem() CustomDomainOutput {
+	return o.ApplyT(func(v *CustomDomain) CustomDomain {
+		if v != nil {
+			return *v
+		}
+		var ret CustomDomain
+		return ret
+	}).(CustomDomainOutput)
+}
+
+func (o CustomDomainPtrOutput) DomainName() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *CustomDomain) *string {
+		if v == nil {
+			return nil
+		}
+		return v.DomainName
+	}).(pulumi.StringPtrOutput)
+}
+
+func (o CustomDomainPtrOutput) HostedZoneName() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *CustomDomain) *string {
+		if v == nil {
+			return nil
+		}
+		return v.HostedZoneName
+	}).(pulumi.StringPtrOutput)
+}
+
 // The email configuration (if any) for Metabase.
 //
 // Adding email integration enables users to set alerts and system notifications.
@@ -219,8 +370,12 @@ func (o EmailConfigPtrOutput) Username() pulumi.StringPtrOutput {
 }
 
 func init() {
+	pulumi.RegisterInputType(reflect.TypeOf((*CustomDomainInput)(nil)).Elem(), CustomDomainArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*CustomDomainPtrInput)(nil)).Elem(), CustomDomainArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*EmailConfigInput)(nil)).Elem(), EmailConfigArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*EmailConfigPtrInput)(nil)).Elem(), EmailConfigArgs{})
+	pulumi.RegisterOutputType(CustomDomainOutput{})
+	pulumi.RegisterOutputType(CustomDomainPtrOutput{})
 	pulumi.RegisterOutputType(EmailConfigOutput{})
 	pulumi.RegisterOutputType(EmailConfigPtrOutput{})
 }

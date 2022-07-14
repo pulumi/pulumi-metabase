@@ -55,6 +55,7 @@ setup(name='pulumi_metabase',
           'parver>=0.2.1',
           'pulumi>=3.0.0,<4.0.0',
           'pulumi-aws>=5.0.0,<6.0.0',
+          'pulumi-random>=4.0.0,<5.0.0',
           'semver>=2.8.1'
       ],
       zip_safe=False)

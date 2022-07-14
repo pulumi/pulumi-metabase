@@ -9,8 +9,41 @@ from typing import Any, Mapping, Optional, Sequence, Union, overload
 from . import _utilities
 
 __all__ = [
+    'CustomDomainArgs',
     'EmailConfigArgs',
 ]
+
+@pulumi.input_type
+class CustomDomainArgs:
+    def __init__(__self__, *,
+                 domain_name: Optional[pulumi.Input[str]] = None,
+                 hosted_zone_name: Optional[pulumi.Input[str]] = None):
+        """
+        Options for setting a custom domain.
+        """
+        if domain_name is not None:
+            pulumi.set(__self__, "domain_name", domain_name)
+        if hosted_zone_name is not None:
+            pulumi.set(__self__, "hosted_zone_name", hosted_zone_name)
+
+    @property
+    @pulumi.getter(name="DomainName")
+    def domain_name(self) -> Optional[pulumi.Input[str]]:
+        return pulumi.get(self, "domain_name")
+
+    @domain_name.setter
+    def domain_name(self, value: Optional[pulumi.Input[str]]):
+        pulumi.set(self, "domain_name", value)
+
+    @property
+    @pulumi.getter(name="hostedZoneName")
+    def hosted_zone_name(self) -> Optional[pulumi.Input[str]]:
+        return pulumi.get(self, "hosted_zone_name")
+
+    @hosted_zone_name.setter
+    def hosted_zone_name(self, value: Optional[pulumi.Input[str]]):
+        pulumi.set(self, "hosted_zone_name", value)
+
 
 @pulumi.input_type
 class EmailConfigArgs:

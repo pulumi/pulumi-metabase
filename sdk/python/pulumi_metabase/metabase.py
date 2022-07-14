@@ -15,24 +15,17 @@ __all__ = ['MetabaseArgs', 'Metabase']
 class MetabaseArgs:
     def __init__(__self__, *,
                  db_subnet_ids: pulumi.Input[Sequence[pulumi.Input[str]]],
-                 domain_name: pulumi.Input[str],
                  ecs_subnet_ids: pulumi.Input[Sequence[pulumi.Input[str]]],
-                 hosted_zone_name: pulumi.Input[str],
                  lb_subnet_ids: pulumi.Input[Sequence[pulumi.Input[str]]],
-                 oidc_client_id: pulumi.Input[str],
-                 oidc_client_secret: pulumi.Input[str],
                  vpc_id: pulumi.Input[str],
+                 custom_domain: Optional[pulumi.Input['CustomDomainArgs']] = None,
                  email_config: Optional[pulumi.Input['EmailConfigArgs']] = None,
                  metabase_version: Optional[pulumi.Input[str]] = None):
         """
         The set of arguments for constructing a Metabase resource.
         :param pulumi.Input[Sequence[pulumi.Input[str]]] db_subnet_ids: The subnets to use for the RDS instance.
-        :param pulumi.Input[str] domain_name: The domain name on which to serve Metabase.  Must be a subdomain of the hostedZoneId.
         :param pulumi.Input[Sequence[pulumi.Input[str]]] ecs_subnet_ids: The subnets to use for the Fargate task.
-        :param pulumi.Input[str] hosted_zone_name: A hosted zone name in which to provision DNS records.
         :param pulumi.Input[Sequence[pulumi.Input[str]]] lb_subnet_ids: The subnets to use for the load balancer.
-        :param pulumi.Input[str] oidc_client_id: Client ID for OIDC auth for the load balancer.
-        :param pulumi.Input[str] oidc_client_secret: Client secret for OIDC auth for the load balancer.
         :param pulumi.Input[str] vpc_id: The VPC to use for the Metabase cluster.
         :param pulumi.Input['EmailConfigArgs'] email_config: The email configuration (if any) for Metabase.
                
@@ -42,13 +35,11 @@ class MetabaseArgs:
         :param pulumi.Input[str] metabase_version: The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
         """
         pulumi.set(__self__, "db_subnet_ids", db_subnet_ids)
-        pulumi.set(__self__, "domain_name", domain_name)
         pulumi.set(__self__, "ecs_subnet_ids", ecs_subnet_ids)
-        pulumi.set(__self__, "hosted_zone_name", hosted_zone_name)
         pulumi.set(__self__, "lb_subnet_ids", lb_subnet_ids)
-        pulumi.set(__self__, "oidc_client_id", oidc_client_id)
-        pulumi.set(__self__, "oidc_client_secret", oidc_client_secret)
         pulumi.set(__self__, "vpc_id", vpc_id)
+        if custom_domain is not None:
+            pulumi.set(__self__, "custom_domain", custom_domain)
         if email_config is not None:
             pulumi.set(__self__, "email_config", email_config)
         if metabase_version is not None:
@@ -67,18 +58,6 @@ class MetabaseArgs:
         pulumi.set(self, "db_subnet_ids", value)
 
     @property
-    @pulumi.getter(name="domainName")
-    def domain_name(self) -> pulumi.Input[str]:
-        """
-        The domain name on which to serve Metabase.  Must be a subdomain of the hostedZoneId.
-        """
-        return pulumi.get(self, "domain_name")
-
-    @domain_name.setter
-    def domain_name(self, value: pulumi.Input[str]):
-        pulumi.set(self, "domain_name", value)
-
-    @property
     @pulumi.getter(name="ecsSubnetIds")
     def ecs_subnet_ids(self) -> pulumi.Input[Sequence[pulumi.Input[str]]]:
         """
@@ -89,18 +68,6 @@ class MetabaseArgs:
     @ecs_subnet_ids.setter
     def ecs_subnet_ids(self, value: pulumi.Input[Sequence[pulumi.Input[str]]]):
         pulumi.set(self, "ecs_subnet_ids", value)
-
-    @property
-    @pulumi.getter(name="hostedZoneName")
-    def hosted_zone_name(self) -> pulumi.Input[str]:
-        """
-        A hosted zone name in which to provision DNS records.
-        """
-        return pulumi.get(self, "hosted_zone_name")
-
-    @hosted_zone_name.setter
-    def hosted_zone_name(self, value: pulumi.Input[str]):
-        pulumi.set(self, "hosted_zone_name", value)
 
     @property
     @pulumi.getter(name="lbSubnetIds")
@@ -115,30 +82,6 @@ class MetabaseArgs:
         pulumi.set(self, "lb_subnet_ids", value)
 
     @property
-    @pulumi.getter(name="oidcClientId")
-    def oidc_client_id(self) -> pulumi.Input[str]:
-        """
-        Client ID for OIDC auth for the load balancer.
-        """
-        return pulumi.get(self, "oidc_client_id")
-
-    @oidc_client_id.setter
-    def oidc_client_id(self, value: pulumi.Input[str]):
-        pulumi.set(self, "oidc_client_id", value)
-
-    @property
-    @pulumi.getter(name="oidcClientSecret")
-    def oidc_client_secret(self) -> pulumi.Input[str]:
-        """
-        Client secret for OIDC auth for the load balancer.
-        """
-        return pulumi.get(self, "oidc_client_secret")
-
-    @oidc_client_secret.setter
-    def oidc_client_secret(self, value: pulumi.Input[str]):
-        pulumi.set(self, "oidc_client_secret", value)
-
-    @property
     @pulumi.getter(name="vpcId")
     def vpc_id(self) -> pulumi.Input[str]:
         """
@@ -149,6 +92,15 @@ class MetabaseArgs:
     @vpc_id.setter
     def vpc_id(self, value: pulumi.Input[str]):
         pulumi.set(self, "vpc_id", value)
+
+    @property
+    @pulumi.getter(name="customDomain")
+    def custom_domain(self) -> Optional[pulumi.Input['CustomDomainArgs']]:
+        return pulumi.get(self, "custom_domain")
+
+    @custom_domain.setter
+    def custom_domain(self, value: Optional[pulumi.Input['CustomDomainArgs']]):
+        pulumi.set(self, "custom_domain", value)
 
     @property
     @pulumi.getter(name="emailConfig")
@@ -184,15 +136,12 @@ class Metabase(pulumi.ComponentResource):
     def __init__(__self__,
                  resource_name: str,
                  opts: Optional[pulumi.ResourceOptions] = None,
+                 custom_domain: Optional[pulumi.Input[pulumi.InputType['CustomDomainArgs']]] = None,
                  db_subnet_ids: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None,
-                 domain_name: Optional[pulumi.Input[str]] = None,
                  ecs_subnet_ids: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None,
                  email_config: Optional[pulumi.Input[pulumi.InputType['EmailConfigArgs']]] = None,
-                 hosted_zone_name: Optional[pulumi.Input[str]] = None,
                  lb_subnet_ids: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None,
                  metabase_version: Optional[pulumi.Input[str]] = None,
-                 oidc_client_id: Optional[pulumi.Input[str]] = None,
-                 oidc_client_secret: Optional[pulumi.Input[str]] = None,
                  vpc_id: Optional[pulumi.Input[str]] = None,
                  __props__=None):
         """
@@ -200,18 +149,14 @@ class Metabase(pulumi.ComponentResource):
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
         :param pulumi.Input[Sequence[pulumi.Input[str]]] db_subnet_ids: The subnets to use for the RDS instance.
-        :param pulumi.Input[str] domain_name: The domain name on which to serve Metabase.  Must be a subdomain of the hostedZoneId.
         :param pulumi.Input[Sequence[pulumi.Input[str]]] ecs_subnet_ids: The subnets to use for the Fargate task.
         :param pulumi.Input[pulumi.InputType['EmailConfigArgs']] email_config: The email configuration (if any) for Metabase.
                
                Adding email integration enables users to set alerts and system notifications.
                
                https://www.metabase.com/docs/latest/administration-guide/02-setting-up-email.html
-        :param pulumi.Input[str] hosted_zone_name: A hosted zone name in which to provision DNS records.
         :param pulumi.Input[Sequence[pulumi.Input[str]]] lb_subnet_ids: The subnets to use for the load balancer.
         :param pulumi.Input[str] metabase_version: The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
-        :param pulumi.Input[str] oidc_client_id: Client ID for OIDC auth for the load balancer.
-        :param pulumi.Input[str] oidc_client_secret: Client secret for OIDC auth for the load balancer.
         :param pulumi.Input[str] vpc_id: The VPC to use for the Metabase cluster.
         """
         ...
@@ -237,15 +182,12 @@ class Metabase(pulumi.ComponentResource):
     def _internal_init(__self__,
                  resource_name: str,
                  opts: Optional[pulumi.ResourceOptions] = None,
+                 custom_domain: Optional[pulumi.Input[pulumi.InputType['CustomDomainArgs']]] = None,
                  db_subnet_ids: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None,
-                 domain_name: Optional[pulumi.Input[str]] = None,
                  ecs_subnet_ids: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None,
                  email_config: Optional[pulumi.Input[pulumi.InputType['EmailConfigArgs']]] = None,
-                 hosted_zone_name: Optional[pulumi.Input[str]] = None,
                  lb_subnet_ids: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None,
                  metabase_version: Optional[pulumi.Input[str]] = None,
-                 oidc_client_id: Optional[pulumi.Input[str]] = None,
-                 oidc_client_secret: Optional[pulumi.Input[str]] = None,
                  vpc_id: Optional[pulumi.Input[str]] = None,
                  __props__=None):
         if opts is None:
@@ -261,29 +203,18 @@ class Metabase(pulumi.ComponentResource):
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = MetabaseArgs.__new__(MetabaseArgs)
 
+            __props__.__dict__["custom_domain"] = custom_domain
             if db_subnet_ids is None and not opts.urn:
                 raise TypeError("Missing required property 'db_subnet_ids'")
             __props__.__dict__["db_subnet_ids"] = db_subnet_ids
-            if domain_name is None and not opts.urn:
-                raise TypeError("Missing required property 'domain_name'")
-            __props__.__dict__["domain_name"] = domain_name
             if ecs_subnet_ids is None and not opts.urn:
                 raise TypeError("Missing required property 'ecs_subnet_ids'")
             __props__.__dict__["ecs_subnet_ids"] = ecs_subnet_ids
             __props__.__dict__["email_config"] = email_config
-            if hosted_zone_name is None and not opts.urn:
-                raise TypeError("Missing required property 'hosted_zone_name'")
-            __props__.__dict__["hosted_zone_name"] = hosted_zone_name
             if lb_subnet_ids is None and not opts.urn:
                 raise TypeError("Missing required property 'lb_subnet_ids'")
             __props__.__dict__["lb_subnet_ids"] = lb_subnet_ids
             __props__.__dict__["metabase_version"] = metabase_version
-            if oidc_client_id is None and not opts.urn:
-                raise TypeError("Missing required property 'oidc_client_id'")
-            __props__.__dict__["oidc_client_id"] = oidc_client_id
-            if oidc_client_secret is None and not opts.urn:
-                raise TypeError("Missing required property 'oidc_client_secret'")
-            __props__.__dict__["oidc_client_secret"] = oidc_client_secret
             if vpc_id is None and not opts.urn:
                 raise TypeError("Missing required property 'vpc_id'")
             __props__.__dict__["vpc_id"] = vpc_id

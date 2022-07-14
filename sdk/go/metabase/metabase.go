@@ -30,23 +30,11 @@ func NewMetabase(ctx *pulumi.Context,
 	if args.DbSubnetIds == nil {
 		return nil, errors.New("invalid value for required argument 'DbSubnetIds'")
 	}
-	if args.DomainName == nil {
-		return nil, errors.New("invalid value for required argument 'DomainName'")
-	}
 	if args.EcsSubnetIds == nil {
 		return nil, errors.New("invalid value for required argument 'EcsSubnetIds'")
 	}
-	if args.HostedZoneName == nil {
-		return nil, errors.New("invalid value for required argument 'HostedZoneName'")
-	}
 	if args.LbSubnetIds == nil {
 		return nil, errors.New("invalid value for required argument 'LbSubnetIds'")
-	}
-	if args.OidcClientId == nil {
-		return nil, errors.New("invalid value for required argument 'OidcClientId'")
-	}
-	if args.OidcClientSecret == nil {
-		return nil, errors.New("invalid value for required argument 'OidcClientSecret'")
 	}
 	if args.VpcId == nil {
 		return nil, errors.New("invalid value for required argument 'VpcId'")
@@ -60,10 +48,9 @@ func NewMetabase(ctx *pulumi.Context,
 }
 
 type metabaseArgs struct {
+	CustomDomain *CustomDomain `pulumi:"customDomain"`
 	// The subnets to use for the RDS instance.
 	DbSubnetIds []string `pulumi:"dbSubnetIds"`
-	// The domain name on which to serve Metabase.  Must be a subdomain of the hostedZoneId.
-	DomainName string `pulumi:"domainName"`
 	// The subnets to use for the Fargate task.
 	EcsSubnetIds []string `pulumi:"ecsSubnetIds"`
 	// The email configuration (if any) for Metabase.
@@ -72,26 +59,19 @@ type metabaseArgs struct {
 	//
 	// https://www.metabase.com/docs/latest/administration-guide/02-setting-up-email.html
 	EmailConfig *EmailConfig `pulumi:"emailConfig"`
-	// A hosted zone name in which to provision DNS records.
-	HostedZoneName string `pulumi:"hostedZoneName"`
 	// The subnets to use for the load balancer.
 	LbSubnetIds []string `pulumi:"lbSubnetIds"`
 	// The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
 	MetabaseVersion *string `pulumi:"metabaseVersion"`
-	// Client ID for OIDC auth for the load balancer.
-	OidcClientId string `pulumi:"oidcClientId"`
-	// Client secret for OIDC auth for the load balancer.
-	OidcClientSecret string `pulumi:"oidcClientSecret"`
 	// The VPC to use for the Metabase cluster.
 	VpcId string `pulumi:"vpcId"`
 }
 
 // The set of arguments for constructing a Metabase resource.
 type MetabaseArgs struct {
+	CustomDomain CustomDomainPtrInput
 	// The subnets to use for the RDS instance.
 	DbSubnetIds pulumi.StringArrayInput
-	// The domain name on which to serve Metabase.  Must be a subdomain of the hostedZoneId.
-	DomainName pulumi.StringInput
 	// The subnets to use for the Fargate task.
 	EcsSubnetIds pulumi.StringArrayInput
 	// The email configuration (if any) for Metabase.
@@ -100,16 +80,10 @@ type MetabaseArgs struct {
 	//
 	// https://www.metabase.com/docs/latest/administration-guide/02-setting-up-email.html
 	EmailConfig EmailConfigPtrInput
-	// A hosted zone name in which to provision DNS records.
-	HostedZoneName pulumi.StringInput
 	// The subnets to use for the load balancer.
 	LbSubnetIds pulumi.StringArrayInput
 	// The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
 	MetabaseVersion pulumi.StringPtrInput
-	// Client ID for OIDC auth for the load balancer.
-	OidcClientId pulumi.StringInput
-	// Client secret for OIDC auth for the load balancer.
-	OidcClientSecret pulumi.StringInput
 	// The VPC to use for the Metabase cluster.
 	VpcId pulumi.StringInput
 }

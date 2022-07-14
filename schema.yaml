@@ -21,6 +21,14 @@ types:
         type: string
       password:
         type: string
+  metabase:index:CustomDomain:
+    description: Options for setting a custom domain.
+    type: object
+    properties:
+      hostedZoneName:
+        type: string
+      DomainName:
+        type: string
 resources:
   metabase:index:Metabase:
     isComponent: true
@@ -43,12 +51,8 @@ resources:
         type: array
         items:
           type: string
-      hostedZoneName:
-        description: A hosted zone name in which to provision DNS records.
-        type: string
-      domainName:
-        description: The domain name on which to serve Metabase.  Must be a subdomain of the hostedZoneId.
-        type: string
+      customDomain:
+        $ref: "#/types/metabase:index:CustomDomain"
       metabaseVersion:
         description: The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
         type: string
@@ -60,21 +64,11 @@ resources:
 
           https://www.metabase.com/docs/latest/administration-guide/02-setting-up-email.html
         $ref: "#/types/metabase:index:EmailConfig"
-      oidcClientId:
-        description: Client ID for OIDC auth for the load balancer.
-        type: string
-      oidcClientSecret:
-        description: Client secret for OIDC auth for the load balancer.
-        type: string
     requiredInputs:
       - vpcId
       - ecsSubnetIds
       - dbSubnetIds
       - lbSubnetIds
-      - hostedZoneName
-      - domainName
-      - oidcClientId
-      - oidcClientSecret
     properties:
       dnsName:
         type: string
@@ -91,15 +85,18 @@ language:
     packageReferences:
       Pulumi: 3.*
       Pulumi.Aws: 5.*
+      Pulumi.Random: 4.*
   go:
     generateResourceContainerTypes: true
     importBasePath: github.com/pulumi/pulumi-metabase/sdk/go/metabase
   nodejs:
     dependencies:
       "@pulumi/aws": "^5.0.0"
+      "@pulumi/random": "^4.0.0"
     devDependencies:
       typescript: "^3.7.0"
   python:
     requires:
       pulumi: ">=3.0.0,<4.0.0"
       pulumi-aws: ">=5.0.0,<6.0.0"
+      pulumi-random: ">=4.0.0,<5.0.0"

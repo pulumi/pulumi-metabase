@@ -43,36 +43,21 @@ export class Metabase extends pulumi.ComponentResource {
             if ((!args || args.dbSubnetIds === undefined) && !opts.urn) {
                 throw new Error("Missing required property 'dbSubnetIds'");
             }
-            if ((!args || args.domainName === undefined) && !opts.urn) {
-                throw new Error("Missing required property 'domainName'");
-            }
             if ((!args || args.ecsSubnetIds === undefined) && !opts.urn) {
                 throw new Error("Missing required property 'ecsSubnetIds'");
-            }
-            if ((!args || args.hostedZoneName === undefined) && !opts.urn) {
-                throw new Error("Missing required property 'hostedZoneName'");
             }
             if ((!args || args.lbSubnetIds === undefined) && !opts.urn) {
                 throw new Error("Missing required property 'lbSubnetIds'");
             }
-            if ((!args || args.oidcClientId === undefined) && !opts.urn) {
-                throw new Error("Missing required property 'oidcClientId'");
-            }
-            if ((!args || args.oidcClientSecret === undefined) && !opts.urn) {
-                throw new Error("Missing required property 'oidcClientSecret'");
-            }
             if ((!args || args.vpcId === undefined) && !opts.urn) {
                 throw new Error("Missing required property 'vpcId'");
             }
+            resourceInputs["customDomain"] = args ? args.customDomain : undefined;
             resourceInputs["dbSubnetIds"] = args ? args.dbSubnetIds : undefined;
-            resourceInputs["domainName"] = args ? args.domainName : undefined;
             resourceInputs["ecsSubnetIds"] = args ? args.ecsSubnetIds : undefined;
             resourceInputs["emailConfig"] = args ? args.emailConfig : undefined;
-            resourceInputs["hostedZoneName"] = args ? args.hostedZoneName : undefined;
             resourceInputs["lbSubnetIds"] = args ? args.lbSubnetIds : undefined;
             resourceInputs["metabaseVersion"] = args ? args.metabaseVersion : undefined;
-            resourceInputs["oidcClientId"] = args ? args.oidcClientId : undefined;
-            resourceInputs["oidcClientSecret"] = args ? args.oidcClientSecret : undefined;
             resourceInputs["vpcId"] = args ? args.vpcId : undefined;
             resourceInputs["dnsName"] = undefined /*out*/;
             resourceInputs["securityGroupId"] = undefined /*out*/;
@@ -89,14 +74,11 @@ export class Metabase extends pulumi.ComponentResource {
  * The set of arguments for constructing a Metabase resource.
  */
 export interface MetabaseArgs {
+    customDomain?: pulumi.Input<inputs.CustomDomainArgs>;
     /**
      * The subnets to use for the RDS instance.
      */
     dbSubnetIds: pulumi.Input<pulumi.Input<string>[]>;
-    /**
-     * The domain name on which to serve Metabase.  Must be a subdomain of the hostedZoneId.
-     */
-    domainName: pulumi.Input<string>;
     /**
      * The subnets to use for the Fargate task.
      */
@@ -110,10 +92,6 @@ export interface MetabaseArgs {
      */
     emailConfig?: pulumi.Input<inputs.EmailConfigArgs>;
     /**
-     * A hosted zone name in which to provision DNS records.
-     */
-    hostedZoneName: pulumi.Input<string>;
-    /**
      * The subnets to use for the load balancer.
      */
     lbSubnetIds: pulumi.Input<pulumi.Input<string>[]>;
@@ -121,14 +99,6 @@ export interface MetabaseArgs {
      * The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
      */
     metabaseVersion?: pulumi.Input<string>;
-    /**
-     * Client ID for OIDC auth for the load balancer.
-     */
-    oidcClientId: pulumi.Input<string>;
-    /**
-     * Client secret for OIDC auth for the load balancer.
-     */
-    oidcClientSecret: pulumi.Input<string>;
     /**
      * The VPC to use for the Metabase cluster.
      */
