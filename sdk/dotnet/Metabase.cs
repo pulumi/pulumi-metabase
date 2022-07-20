@@ -32,7 +32,7 @@ namespace Pulumi.Metabase
         /// <param name="name">The unique name of the resource</param>
         /// <param name="args">The arguments used to populate this resource's properties</param>
         /// <param name="options">A bag of options that control this resource's behavior</param>
-        public Metabase(string name, MetabaseArgs args, ComponentResourceOptions? options = null)
+        public Metabase(string name, MetabaseArgs? args = null, ComponentResourceOptions? options = null)
             : base("metabase:index:Metabase", name, args ?? new MetabaseArgs(), MakeResourceOptions(options, ""), remote: true)
         {
         }
@@ -52,54 +52,8 @@ namespace Pulumi.Metabase
 
     public sealed class MetabaseArgs : Pulumi.ResourceArgs
     {
-        [Input("customDomain")]
-        public Input<Inputs.CustomDomainArgs>? CustomDomain { get; set; }
-
-        [Input("dbSubnetIds", required: true)]
-        private InputList<string>? _dbSubnetIds;
-
-        /// <summary>
-        /// The subnets to use for the RDS instance.
-        /// </summary>
-        public InputList<string> DbSubnetIds
-        {
-            get => _dbSubnetIds ?? (_dbSubnetIds = new InputList<string>());
-            set => _dbSubnetIds = value;
-        }
-
-        [Input("ecsSubnetIds", required: true)]
-        private InputList<string>? _ecsSubnetIds;
-
-        /// <summary>
-        /// The subnets to use for the Fargate task.
-        /// </summary>
-        public InputList<string> EcsSubnetIds
-        {
-            get => _ecsSubnetIds ?? (_ecsSubnetIds = new InputList<string>());
-            set => _ecsSubnetIds = value;
-        }
-
-        /// <summary>
-        /// The email configuration (if any) for Metabase.
-        /// 
-        /// Adding email integration enables users to set alerts and system notifications.
-        /// 
-        /// https://www.metabase.com/docs/latest/administration-guide/02-setting-up-email.html
-        /// </summary>
-        [Input("emailConfig")]
-        public Input<Inputs.EmailConfigArgs>? EmailConfig { get; set; }
-
-        [Input("lbSubnetIds", required: true)]
-        private InputList<string>? _lbSubnetIds;
-
-        /// <summary>
-        /// The subnets to use for the load balancer.
-        /// </summary>
-        public InputList<string> LbSubnetIds
-        {
-            get => _lbSubnetIds ?? (_lbSubnetIds = new InputList<string>());
-            set => _lbSubnetIds = value;
-        }
+        [Input("domain")]
+        public Input<Inputs.CustomDomainArgs>? Domain { get; set; }
 
         /// <summary>
         /// The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
@@ -107,11 +61,14 @@ namespace Pulumi.Metabase
         [Input("metabaseVersion")]
         public Input<string>? MetabaseVersion { get; set; }
 
+        [Input("networking")]
+        public Input<Inputs.NetworkingArgs>? Networking { get; set; }
+
         /// <summary>
         /// The VPC to use for the Metabase cluster.
         /// </summary>
-        [Input("vpcId", required: true)]
-        public Input<string> VpcId { get; set; } = null!;
+        [Input("vpcId")]
+        public Input<string>? VpcId { get; set; }
 
         public MetabaseArgs()
         {

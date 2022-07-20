@@ -133,7 +133,7 @@ func (m *MetabaseResourceConstructor) NewMySQLCluster(dbSubnetIDs pulumi.StringA
 		return nil, err
 	}
 
-	return rds.NewCluster(m.ctx, m.baseResourceName, &rds.ClusterArgs{
+	clusterArgs := &rds.ClusterArgs{
 		ClusterIdentifier:       pulumi.Sprintf("%smetabasemysql", m.name),
 		DatabaseName:            pulumi.String("metabase"),
 		MasterUsername:          pulumi.String("admin"),
@@ -141,11 +141,13 @@ func (m *MetabaseResourceConstructor) NewMySQLCluster(dbSubnetIDs pulumi.StringA
 		Engine:                  pulumi.String("aurora-mysql"),
 		EngineMode:              pulumi.String("serverless"),
 		EngineVersion:           pulumi.String("5.7.mysql_aurora.2.07.1"),
-		DbSubnetGroupName:       metabaseMysqlSubnetGroup.Name,
 		VpcSecurityGroupIds:     pulumi.ToStringArrayOutput([]pulumi.StringOutput{metabaseSecurityGroupID.ToStringOutput()}),
 		FinalSnapshotIdentifier: pulumi.Sprintf("%smetabasefinalsnapshot", m.name),
 		EnableHttpEndpoint:      pulumi.BoolPtr(true),
-	}, m.opts...)
+		DbSubnetGroupName:       metabaseMysqlSubnetGroup.Name,
+	}
+
+	return rds.NewCluster(m.ctx, m.baseResourceName, clusterArgs, m.opts...)
 }
 
 func (m *MetabaseResourceConstructor) GetHostedZoneId(hostedZoneName pulumi.StringInput) pulumi.StringOutput {
@@ -171,15 +173,15 @@ func (m *MetabaseResourceConstructor) NewDomainCertificate(domainName pulumi.Str
 
 	certificateValidationRecordName := fmt.Sprintf("%s-metabase-certvalidation", m.name)
 	certificateValidationRecord, err := route53.NewRecord(m.ctx, certificateValidationRecordName, &route53.RecordArgs{
-		Name: certificate.ValidationOptions.ApplyT(func(opts []acm.CertificateDomainValidationOption) string {
+		Name: certificate.DomainValidationOptions.ApplyT(func(opts []acm.CertificateDomainValidationOption) string {
 			return *opts[0].ResourceRecordName
 		}).(pulumi.StringOutput),
-		Type: certificate.ValidationOptions.ApplyT(func(opts []acm.CertificateDomainValidationOption) string {
+		Type: certificate.DomainValidationOptions.ApplyT(func(opts []acm.CertificateDomainValidationOption) string {
 			return *opts[0].ResourceRecordType
 		}).(pulumi.StringOutput),
 		ZoneId: hostedZoneID,
-		Records: certificate.ValidationOptions.ApplyT(func(opts []acm.CertificateDomainValidationOption) []string {
-			return []string{*opts[0].ResourceRecordType}
+		Records: certificate.DomainValidationOptions.ApplyT(func(opts []acm.CertificateDomainValidationOption) []string {
+			return []string{*opts[0].ResourceRecordValue}
 		}).(pulumi.StringArrayOutput),
 		Ttl: pulumi.IntPtr(60),
 	}, m.opts...)
@@ -201,7 +203,8 @@ func (m *MetabaseResourceConstructor) NewDomainCertificate(domainName pulumi.Str
 func (m *MetabaseResourceConstructor) NewLoadBalancer(
 	vpcID pulumi.StringInput, lbSubnetIDs pulumi.StringArrayInput,
 	loadBalancerSecurityGroupID pulumi.IDOutput, metabasePort int,
-	certificateValidation *acm.CertificateValidation, certificate *acm.Certificate) (*lb.LoadBalancer, *lb.TargetGroup, *lb.Listener, error) {
+	certificateValidation *acm.CertificateValidation, certificate *acm.Certificate,
+	attachDomain bool) (*lb.LoadBalancer, *lb.TargetGroup, *lb.Listener, error) {
 	// Stable load balancer endpoint (no other way to get a consistent IP for an ECS service!!!)
 	loadBalancer, err := lb.NewLoadBalancer(m.ctx, m.baseResourceName, &lb.LoadBalancerArgs{
 		LoadBalancerType: pulumi.String("application"),
@@ -228,7 +231,7 @@ func (m *MetabaseResourceConstructor) NewLoadBalancer(
 
 	listenerArgs := &lb.ListenerArgs{
 		LoadBalancerArn: loadBalancer.Arn,
-		Port:            pulumi.Int(443),
+		Port:            pulumi.Int(80),
 		Protocol:        pulumi.String("HTTP"),
 		DefaultActions: lb.ListenerDefaultActionArray{
 			lb.ListenerDefaultActionArgs{
@@ -242,6 +245,8 @@ func (m *MetabaseResourceConstructor) NewLoadBalancer(
 	if certificate != nil {
 		listenerArgs.CertificateArn = certificate.Arn
 		listenerArgs.SslPolicy = pulumi.String("ELBSecurityPolicy-TLS-1-2-2017-01")
+		listenerArgs.Port = pulumi.Int(443)
+		listenerArgs.Protocol = pulumi.String("HTTPS")
 	}
 
 	listenerOpts := m.opts
@@ -254,34 +259,79 @@ func (m *MetabaseResourceConstructor) NewLoadBalancer(
 		return nil, nil, nil, err
 	}
 
-	httpRedirectListenerName := fmt.Sprintf("%s-metabase-redirecthttp", m.name)
-	_, err = lb.NewListener(m.ctx, httpRedirectListenerName, &lb.ListenerArgs{
-		LoadBalancerArn: loadBalancer.Arn,
-		Port:            pulumi.IntPtr(80),
-		Protocol:        pulumi.String("HTTP"),
-		DefaultActions: lb.ListenerDefaultActionArray{
-			lb.ListenerDefaultActionArgs{
-				Type: pulumi.String("redirect"),
-				Redirect: &lb.ListenerDefaultActionRedirectArgs{
-					Protocol:   pulumi.String("HTTPS"),
-					Port:       pulumi.String("443"),
-					StatusCode: pulumi.String("HTTP_301"),
+	if attachDomain {
+		httpRedirectListenerOpts := append(m.opts, pulumi.DependsOn([]pulumi.Resource{listener}))
+		httpRedirectListenerName := fmt.Sprintf("%s-metabase-redirecthttp", m.name)
+		_, err = lb.NewListener(m.ctx, httpRedirectListenerName, &lb.ListenerArgs{
+			LoadBalancerArn: loadBalancer.Arn,
+			Port:            pulumi.IntPtr(80),
+			Protocol:        pulumi.String("HTTP"),
+			DefaultActions: lb.ListenerDefaultActionArray{
+				lb.ListenerDefaultActionArgs{
+					Type: pulumi.String("redirect"),
+					Redirect: &lb.ListenerDefaultActionRedirectArgs{
+						Protocol:   pulumi.String("HTTPS"),
+						Port:       pulumi.String("443"),
+						StatusCode: pulumi.String("HTTP_301"),
+					},
 				},
 			},
-		},
-	}, m.opts...)
-	if err != nil {
-		return nil, nil, nil, err
+		}, httpRedirectListenerOpts...)
+		if err != nil {
+			return nil, nil, nil, err
+		}
 	}
 
 	return loadBalancer, targetGroup, listener, nil
+}
+
+func (m *MetabaseResourceConstructor) newECSExecutionRole(name string) (*iam.Role, error) {
+	assumeRolePolicy, err := iam.GetPolicyDocument(m.ctx, &iam.GetPolicyDocumentArgs{
+		Statements: []iam.GetPolicyDocumentStatement{
+			{
+				Actions: []string{
+					"sts:AssumeRole",
+				},
+				Principals: []iam.GetPolicyDocumentStatementPrincipal{
+					{
+						Type: "Service",
+						Identifiers: []string{
+							"ecs-tasks.amazonaws.com",
+						},
+					},
+				},
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	ecsTaskExecutionRoleName := fmt.Sprintf("%s-ecsTaskExecutionRole", name)
+	ecsTaskExecutionRole, err := iam.NewRole(m.ctx, ecsTaskExecutionRoleName, &iam.RoleArgs{
+		AssumeRolePolicy: pulumi.String(assumeRolePolicy.Json),
+	}, m.opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	ecsTaskExecutionRolePolicyName := fmt.Sprintf("%s-ecsTaskExecutionRolePolicy", name)
+	_, err = iam.NewRolePolicyAttachment(m.ctx, ecsTaskExecutionRolePolicyName, &iam.RolePolicyAttachmentArgs{
+		Role:      ecsTaskExecutionRole.Name,
+		PolicyArn: pulumi.String("arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"),
+	}, m.opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	return ecsTaskExecutionRole, nil
 }
 
 func (m *MetabaseResourceConstructor) NewMetabaseService(
 	metabaseVersion pulumi.StringInput, regionName pulumi.StringOutput,
 	metabaseContainerDef pulumi.StringOutput, ecsSubnetIDs pulumi.StringArrayInput,
 	metabaseSecurityGroupID pulumi.IDOutput, metabasePort int, targetGroupARN pulumi.StringOutput,
-	lbListener *lb.Listener,
+	lbListener *lb.Listener, assignPublicIP bool,
 ) error {
 
 	metabaseCluster, err := ecs.NewCluster(m.ctx, m.baseResourceName, &ecs.ClusterArgs{}, m.opts...)
@@ -289,7 +339,7 @@ func (m *MetabaseResourceConstructor) NewMetabaseService(
 		return err
 	}
 
-	metabaseExecutionRole, err := iam.GetRole(m.ctx, m.baseResourceName, pulumi.ID("ecsTaskExecutionRole"), nil, m.opts...)
+	metabaseExecutionRole, err := m.newECSExecutionRole(m.baseResourceName)
 	if err != nil {
 		return err
 	}
@@ -316,7 +366,7 @@ func (m *MetabaseResourceConstructor) NewMetabaseService(
 		DeploymentMinimumHealthyPercent: pulumi.IntPtr(0),
 		LaunchType:                      pulumi.String("FARGATE"),
 		NetworkConfiguration: &ecs.ServiceNetworkConfigurationArgs{
-			AssignPublicIp: pulumi.BoolPtr(false),
+			AssignPublicIp: pulumi.BoolPtr(assignPublicIP),
 			Subnets:        ecsSubnetIDs,
 			SecurityGroups: pulumi.ToStringArrayOutput([]pulumi.StringOutput{metabaseSecurityGroupID.ToStringOutput()}),
 		},

@@ -36,28 +36,13 @@ export class Metabase extends pulumi.ComponentResource {
      * @param args The arguments to use to populate this resource's properties.
      * @param opts A bag of options that control this resource's behavior.
      */
-    constructor(name: string, args: MetabaseArgs, opts?: pulumi.ComponentResourceOptions) {
+    constructor(name: string, args?: MetabaseArgs, opts?: pulumi.ComponentResourceOptions) {
         let resourceInputs: pulumi.Inputs = {};
         opts = opts || {};
         if (!opts.id) {
-            if ((!args || args.dbSubnetIds === undefined) && !opts.urn) {
-                throw new Error("Missing required property 'dbSubnetIds'");
-            }
-            if ((!args || args.ecsSubnetIds === undefined) && !opts.urn) {
-                throw new Error("Missing required property 'ecsSubnetIds'");
-            }
-            if ((!args || args.lbSubnetIds === undefined) && !opts.urn) {
-                throw new Error("Missing required property 'lbSubnetIds'");
-            }
-            if ((!args || args.vpcId === undefined) && !opts.urn) {
-                throw new Error("Missing required property 'vpcId'");
-            }
-            resourceInputs["customDomain"] = args ? args.customDomain : undefined;
-            resourceInputs["dbSubnetIds"] = args ? args.dbSubnetIds : undefined;
-            resourceInputs["ecsSubnetIds"] = args ? args.ecsSubnetIds : undefined;
-            resourceInputs["emailConfig"] = args ? args.emailConfig : undefined;
-            resourceInputs["lbSubnetIds"] = args ? args.lbSubnetIds : undefined;
+            resourceInputs["domain"] = args ? args.domain : undefined;
             resourceInputs["metabaseVersion"] = args ? args.metabaseVersion : undefined;
+            resourceInputs["networking"] = args ? args.networking : undefined;
             resourceInputs["vpcId"] = args ? args.vpcId : undefined;
             resourceInputs["dnsName"] = undefined /*out*/;
             resourceInputs["securityGroupId"] = undefined /*out*/;
@@ -74,33 +59,14 @@ export class Metabase extends pulumi.ComponentResource {
  * The set of arguments for constructing a Metabase resource.
  */
 export interface MetabaseArgs {
-    customDomain?: pulumi.Input<inputs.CustomDomainArgs>;
-    /**
-     * The subnets to use for the RDS instance.
-     */
-    dbSubnetIds: pulumi.Input<pulumi.Input<string>[]>;
-    /**
-     * The subnets to use for the Fargate task.
-     */
-    ecsSubnetIds: pulumi.Input<pulumi.Input<string>[]>;
-    /**
-     * The email configuration (if any) for Metabase.
-     *
-     * Adding email integration enables users to set alerts and system notifications.
-     *
-     * https://www.metabase.com/docs/latest/administration-guide/02-setting-up-email.html
-     */
-    emailConfig?: pulumi.Input<inputs.EmailConfigArgs>;
-    /**
-     * The subnets to use for the load balancer.
-     */
-    lbSubnetIds: pulumi.Input<pulumi.Input<string>[]>;
+    domain?: pulumi.Input<inputs.CustomDomainArgs>;
     /**
      * The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
      */
     metabaseVersion?: pulumi.Input<string>;
+    networking?: pulumi.Input<inputs.NetworkingArgs>;
     /**
      * The VPC to use for the Metabase cluster.
      */
-    vpcId: pulumi.Input<string>;
+    vpcId?: pulumi.Input<string>;
 }

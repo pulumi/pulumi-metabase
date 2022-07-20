@@ -15,7 +15,7 @@ namespace Pulumi.Metabase.Inputs
     /// </summary>
     public sealed class CustomDomainArgs : Pulumi.ResourceArgs
     {
-        [Input("DomainName")]
+        [Input("domainName")]
         public Input<string>? DomainName { get; set; }
 
         [Input("hostedZoneName")]

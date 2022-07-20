@@ -14,109 +14,32 @@ __all__ = ['MetabaseArgs', 'Metabase']
 @pulumi.input_type
 class MetabaseArgs:
     def __init__(__self__, *,
-                 db_subnet_ids: pulumi.Input[Sequence[pulumi.Input[str]]],
-                 ecs_subnet_ids: pulumi.Input[Sequence[pulumi.Input[str]]],
-                 lb_subnet_ids: pulumi.Input[Sequence[pulumi.Input[str]]],
-                 vpc_id: pulumi.Input[str],
-                 custom_domain: Optional[pulumi.Input['CustomDomainArgs']] = None,
-                 email_config: Optional[pulumi.Input['EmailConfigArgs']] = None,
-                 metabase_version: Optional[pulumi.Input[str]] = None):
+                 domain: Optional[pulumi.Input['CustomDomainArgs']] = None,
+                 metabase_version: Optional[pulumi.Input[str]] = None,
+                 networking: Optional[pulumi.Input['NetworkingArgs']] = None,
+                 vpc_id: Optional[pulumi.Input[str]] = None):
         """
         The set of arguments for constructing a Metabase resource.
-        :param pulumi.Input[Sequence[pulumi.Input[str]]] db_subnet_ids: The subnets to use for the RDS instance.
-        :param pulumi.Input[Sequence[pulumi.Input[str]]] ecs_subnet_ids: The subnets to use for the Fargate task.
-        :param pulumi.Input[Sequence[pulumi.Input[str]]] lb_subnet_ids: The subnets to use for the load balancer.
-        :param pulumi.Input[str] vpc_id: The VPC to use for the Metabase cluster.
-        :param pulumi.Input['EmailConfigArgs'] email_config: The email configuration (if any) for Metabase.
-               
-               Adding email integration enables users to set alerts and system notifications.
-               
-               https://www.metabase.com/docs/latest/administration-guide/02-setting-up-email.html
         :param pulumi.Input[str] metabase_version: The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
+        :param pulumi.Input[str] vpc_id: The VPC to use for the Metabase cluster.
         """
-        pulumi.set(__self__, "db_subnet_ids", db_subnet_ids)
-        pulumi.set(__self__, "ecs_subnet_ids", ecs_subnet_ids)
-        pulumi.set(__self__, "lb_subnet_ids", lb_subnet_ids)
-        pulumi.set(__self__, "vpc_id", vpc_id)
-        if custom_domain is not None:
-            pulumi.set(__self__, "custom_domain", custom_domain)
-        if email_config is not None:
-            pulumi.set(__self__, "email_config", email_config)
+        if domain is not None:
+            pulumi.set(__self__, "domain", domain)
         if metabase_version is not None:
             pulumi.set(__self__, "metabase_version", metabase_version)
+        if networking is not None:
+            pulumi.set(__self__, "networking", networking)
+        if vpc_id is not None:
+            pulumi.set(__self__, "vpc_id", vpc_id)
 
     @property
-    @pulumi.getter(name="dbSubnetIds")
-    def db_subnet_ids(self) -> pulumi.Input[Sequence[pulumi.Input[str]]]:
-        """
-        The subnets to use for the RDS instance.
-        """
-        return pulumi.get(self, "db_subnet_ids")
+    @pulumi.getter
+    def domain(self) -> Optional[pulumi.Input['CustomDomainArgs']]:
+        return pulumi.get(self, "domain")
 
-    @db_subnet_ids.setter
-    def db_subnet_ids(self, value: pulumi.Input[Sequence[pulumi.Input[str]]]):
-        pulumi.set(self, "db_subnet_ids", value)
-
-    @property
-    @pulumi.getter(name="ecsSubnetIds")
-    def ecs_subnet_ids(self) -> pulumi.Input[Sequence[pulumi.Input[str]]]:
-        """
-        The subnets to use for the Fargate task.
-        """
-        return pulumi.get(self, "ecs_subnet_ids")
-
-    @ecs_subnet_ids.setter
-    def ecs_subnet_ids(self, value: pulumi.Input[Sequence[pulumi.Input[str]]]):
-        pulumi.set(self, "ecs_subnet_ids", value)
-
-    @property
-    @pulumi.getter(name="lbSubnetIds")
-    def lb_subnet_ids(self) -> pulumi.Input[Sequence[pulumi.Input[str]]]:
-        """
-        The subnets to use for the load balancer.
-        """
-        return pulumi.get(self, "lb_subnet_ids")
-
-    @lb_subnet_ids.setter
-    def lb_subnet_ids(self, value: pulumi.Input[Sequence[pulumi.Input[str]]]):
-        pulumi.set(self, "lb_subnet_ids", value)
-
-    @property
-    @pulumi.getter(name="vpcId")
-    def vpc_id(self) -> pulumi.Input[str]:
-        """
-        The VPC to use for the Metabase cluster.
-        """
-        return pulumi.get(self, "vpc_id")
-
-    @vpc_id.setter
-    def vpc_id(self, value: pulumi.Input[str]):
-        pulumi.set(self, "vpc_id", value)
-
-    @property
-    @pulumi.getter(name="customDomain")
-    def custom_domain(self) -> Optional[pulumi.Input['CustomDomainArgs']]:
-        return pulumi.get(self, "custom_domain")
-
-    @custom_domain.setter
-    def custom_domain(self, value: Optional[pulumi.Input['CustomDomainArgs']]):
-        pulumi.set(self, "custom_domain", value)
-
-    @property
-    @pulumi.getter(name="emailConfig")
-    def email_config(self) -> Optional[pulumi.Input['EmailConfigArgs']]:
-        """
-        The email configuration (if any) for Metabase.
-
-        Adding email integration enables users to set alerts and system notifications.
-
-        https://www.metabase.com/docs/latest/administration-guide/02-setting-up-email.html
-        """
-        return pulumi.get(self, "email_config")
-
-    @email_config.setter
-    def email_config(self, value: Optional[pulumi.Input['EmailConfigArgs']]):
-        pulumi.set(self, "email_config", value)
+    @domain.setter
+    def domain(self, value: Optional[pulumi.Input['CustomDomainArgs']]):
+        pulumi.set(self, "domain", value)
 
     @property
     @pulumi.getter(name="metabaseVersion")
@@ -130,32 +53,42 @@ class MetabaseArgs:
     def metabase_version(self, value: Optional[pulumi.Input[str]]):
         pulumi.set(self, "metabase_version", value)
 
+    @property
+    @pulumi.getter
+    def networking(self) -> Optional[pulumi.Input['NetworkingArgs']]:
+        return pulumi.get(self, "networking")
+
+    @networking.setter
+    def networking(self, value: Optional[pulumi.Input['NetworkingArgs']]):
+        pulumi.set(self, "networking", value)
+
+    @property
+    @pulumi.getter(name="vpcId")
+    def vpc_id(self) -> Optional[pulumi.Input[str]]:
+        """
+        The VPC to use for the Metabase cluster.
+        """
+        return pulumi.get(self, "vpc_id")
+
+    @vpc_id.setter
+    def vpc_id(self, value: Optional[pulumi.Input[str]]):
+        pulumi.set(self, "vpc_id", value)
+
 
 class Metabase(pulumi.ComponentResource):
     @overload
     def __init__(__self__,
                  resource_name: str,
                  opts: Optional[pulumi.ResourceOptions] = None,
-                 custom_domain: Optional[pulumi.Input[pulumi.InputType['CustomDomainArgs']]] = None,
-                 db_subnet_ids: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None,
-                 ecs_subnet_ids: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None,
-                 email_config: Optional[pulumi.Input[pulumi.InputType['EmailConfigArgs']]] = None,
-                 lb_subnet_ids: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None,
+                 domain: Optional[pulumi.Input[pulumi.InputType['CustomDomainArgs']]] = None,
                  metabase_version: Optional[pulumi.Input[str]] = None,
+                 networking: Optional[pulumi.Input[pulumi.InputType['NetworkingArgs']]] = None,
                  vpc_id: Optional[pulumi.Input[str]] = None,
                  __props__=None):
         """
         Create a Metabase resource with the given unique name, props, and options.
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
-        :param pulumi.Input[Sequence[pulumi.Input[str]]] db_subnet_ids: The subnets to use for the RDS instance.
-        :param pulumi.Input[Sequence[pulumi.Input[str]]] ecs_subnet_ids: The subnets to use for the Fargate task.
-        :param pulumi.Input[pulumi.InputType['EmailConfigArgs']] email_config: The email configuration (if any) for Metabase.
-               
-               Adding email integration enables users to set alerts and system notifications.
-               
-               https://www.metabase.com/docs/latest/administration-guide/02-setting-up-email.html
-        :param pulumi.Input[Sequence[pulumi.Input[str]]] lb_subnet_ids: The subnets to use for the load balancer.
         :param pulumi.Input[str] metabase_version: The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
         :param pulumi.Input[str] vpc_id: The VPC to use for the Metabase cluster.
         """
@@ -163,7 +96,7 @@ class Metabase(pulumi.ComponentResource):
     @overload
     def __init__(__self__,
                  resource_name: str,
-                 args: MetabaseArgs,
+                 args: Optional[MetabaseArgs] = None,
                  opts: Optional[pulumi.ResourceOptions] = None):
         """
         Create a Metabase resource with the given unique name, props, and options.
@@ -182,12 +115,9 @@ class Metabase(pulumi.ComponentResource):
     def _internal_init(__self__,
                  resource_name: str,
                  opts: Optional[pulumi.ResourceOptions] = None,
-                 custom_domain: Optional[pulumi.Input[pulumi.InputType['CustomDomainArgs']]] = None,
-                 db_subnet_ids: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None,
-                 ecs_subnet_ids: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None,
-                 email_config: Optional[pulumi.Input[pulumi.InputType['EmailConfigArgs']]] = None,
-                 lb_subnet_ids: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None,
+                 domain: Optional[pulumi.Input[pulumi.InputType['CustomDomainArgs']]] = None,
                  metabase_version: Optional[pulumi.Input[str]] = None,
+                 networking: Optional[pulumi.Input[pulumi.InputType['NetworkingArgs']]] = None,
                  vpc_id: Optional[pulumi.Input[str]] = None,
                  __props__=None):
         if opts is None:
@@ -203,20 +133,9 @@ class Metabase(pulumi.ComponentResource):
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = MetabaseArgs.__new__(MetabaseArgs)
 
-            __props__.__dict__["custom_domain"] = custom_domain
-            if db_subnet_ids is None and not opts.urn:
-                raise TypeError("Missing required property 'db_subnet_ids'")
-            __props__.__dict__["db_subnet_ids"] = db_subnet_ids
-            if ecs_subnet_ids is None and not opts.urn:
-                raise TypeError("Missing required property 'ecs_subnet_ids'")
-            __props__.__dict__["ecs_subnet_ids"] = ecs_subnet_ids
-            __props__.__dict__["email_config"] = email_config
-            if lb_subnet_ids is None and not opts.urn:
-                raise TypeError("Missing required property 'lb_subnet_ids'")
-            __props__.__dict__["lb_subnet_ids"] = lb_subnet_ids
+            __props__.__dict__["domain"] = domain
             __props__.__dict__["metabase_version"] = metabase_version
-            if vpc_id is None and not opts.urn:
-                raise TypeError("Missing required property 'vpc_id'")
+            __props__.__dict__["networking"] = networking
             __props__.__dict__["vpc_id"] = vpc_id
             __props__.__dict__["dns_name"] = None
             __props__.__dict__["security_group_id"] = None

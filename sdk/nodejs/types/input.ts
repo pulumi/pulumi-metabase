@@ -8,21 +8,24 @@ import { input as inputs, output as outputs } from "../types";
  * Options for setting a custom domain.
  */
 export interface CustomDomainArgs {
-    DomainName?: pulumi.Input<string>;
+    domainName?: pulumi.Input<string>;
     hostedZoneName?: pulumi.Input<string>;
 }
 
 /**
- * The email configuration (if any) for Metabase.
- *
- * Adding email integration enables users to set alerts and system notifications.
- *
- * https://www.metabase.com/docs/latest/administration-guide/02-setting-up-email.html
+ * The options for networking.
  */
-export interface EmailConfigArgs {
-    host?: pulumi.Input<string>;
-    password?: pulumi.Input<string>;
-    port?: pulumi.Input<number>;
-    security?: pulumi.Input<string>;
-    username?: pulumi.Input<string>;
+export interface NetworkingArgs {
+    /**
+     * The subnets to use for the RDS instance.
+     */
+    dbSubnetIds?: pulumi.Input<pulumi.Input<string>[]>;
+    /**
+     * The subnets to use for the Fargate task.
+     */
+    ecsSubnetIds?: pulumi.Input<pulumi.Input<string>[]>;
+    /**
+     * The subnets to use for the load balancer.
+     */
+    lbSubnetIds?: pulumi.Input<pulumi.Input<string>[]>;
 }

@@ -21,47 +21,38 @@ import (
 	"github.com/pkg/errors"
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws"
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/acm"
+	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ec2"
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/rds"
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/route53"
 	"github.com/pulumi/pulumi-metabase/pkg/metabase"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
-type AuthenticationStrategy string
-
 const (
 	MetabaseIdentifier = "metabase:index:Metabase"
 
 	// The default port that the `metabase/metabase` Docker image exposes it's HTTP endpoint.
 	metabasePort = 3000
-
-	GoogleAuthentication AuthenticationStrategy = "google"
 )
-
-type MetabaseEmailConfig struct {
-	Host     pulumi.StringInput `pulumi:"host"`
-	Port     pulumi.IntInput    `pulumi:"port"`
-	Security pulumi.StringInput `pulumi:"security"`
-	Username pulumi.StringInput `pulumi:"username"`
-	Password pulumi.StringInput `pulumi:"password"`
-}
 
 type CustomDomain struct {
 	HostedZoneName *pulumi.StringInput `pulumi:"hostedZoneName"`
 	DomainName     *pulumi.StringInput `pulumi:"domainName"`
 }
 
-type MetabaseArgs struct {
-	VpcID           pulumi.StringInput      `pulumi:"vpcId"`
-	ECSSubnetIDs    pulumi.StringArrayInput `pulumi:"ecsSubnetIds"`
-	DBSubnetIDs     pulumi.StringArrayInput `pulumi:"dbSubnetIds"`
-	LBSubnetIDs     pulumi.StringArrayInput `pulumi:"lbSubnetIds"`
-	MetabaseVersion pulumi.StringInput      `pulumi:"metabaseVersion"`
+type Networking struct {
+	ECSSubnetIDs pulumi.StringArrayInput `pulumi:"ecsSubnetIds"`
+	DBSubnetIDs  pulumi.StringArrayInput `pulumi:"dbSubnetIds"`
+	LBSubnetIDs  pulumi.StringArrayInput `pulumi:"lbSubnetIds"`
+}
 
-	EmailConfig MetabaseEmailConfig `pulumi:"emailConfig"`
+type MetabaseArgs struct {
+	VpcID           pulumi.StringInput `pulumi:"vpcId"`
+	MetabaseVersion pulumi.StringInput `pulumi:"metabaseVersion"`
 
 	// Additional args [WIP]
-	Domain CustomDomain `pulumi:"domain"`
+	Domain  CustomDomain `pulumi:"domain"`
+	Network Networking   `pulumi:"networking"`
 }
 
 type Metabase struct {
@@ -84,16 +75,88 @@ func NewMetabase(ctx *pulumi.Context, name string, args *MetabaseArgs, opts ...p
 
 	opts = append(opts, pulumi.Parent(component))
 
+	attachDomainName := args.Domain.DomainName != nil && args.Domain.HostedZoneName != nil
+
 	metabaseBuilder := metabase.NewMetabaseResourceConstructor(ctx, name, opts...)
 
+	vpcID := args.VpcID
+	if vpcID == nil {
+		vpc, err := ec2.NewDefaultVpc(ctx, name, &ec2.DefaultVpcArgs{}, opts...)
+		if err != nil {
+			return nil, err
+		}
+		vpcID = vpc.ID()
+	}
+
+	// If the network options are not provided we just run everything in the same
+	// public subnets. If there are exactly two public subnets available we throw
+	// an error letting the user know they need to configure their VPC.
+	defaultSubnetIDs := vpcID.ToStringOutput().ApplyT(func(id string) ([]string, error) {
+		subnets, err := ec2.GetSubnets(ctx, &ec2.GetSubnetsArgs{
+			Filters: []ec2.GetSubnetsFilter{
+				{
+					Name:   "vpc-id",
+					Values: []string{id},
+				},
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		var result []string
+		azMap := make(map[string]string, len(subnets.Ids))
+		for _, subnetID := range subnets.Ids {
+			s, err := ec2.LookupSubnet(ctx, &ec2.LookupSubnetArgs{
+				Id: &subnetID,
+			})
+			if err != nil {
+				return nil, err
+			}
+
+			_, ok := azMap[s.AvailabilityZone]
+			if !ok && s.MapPublicIpOnLaunch {
+				azMap[s.AvailabilityZone] = s.AvailabilityZone
+				result = append(result, subnetID)
+
+				if len(result) == 2 {
+					break
+				}
+			}
+		}
+
+		if len(result) != 2 {
+			return nil, fmt.Errorf("Your VPC must have at least two public subnets available. You will need to correctly configure your VPC or alternatively provide specific subnet ids in the 'Networking' options.")
+		}
+
+		return result, nil
+	}).(pulumi.StringArrayOutput)
+
+	lbSubnetIDs := args.Network.LBSubnetIDs
+	if lbSubnetIDs == nil {
+		lbSubnetIDs = defaultSubnetIDs
+	}
+
+	ecsAssignPublicIP := false
+	ecsSubnetIDs := args.Network.ECSSubnetIDs
+	if ecsSubnetIDs == nil {
+		ecsAssignPublicIP = true
+		ecsSubnetIDs = defaultSubnetIDs
+	}
+
+	dbSubnetIDs := args.Network.DBSubnetIDs
+	if dbSubnetIDs == nil {
+		dbSubnetIDs = defaultSubnetIDs
+	}
+
 	// Security Group for the MySQL database and Metabase Task
-	metabaseSecurityGroup, err := metabaseBuilder.NewMetabaseSecurityGroup(args.VpcID)
+	metabaseSecurityGroup, err := metabaseBuilder.NewMetabaseSecurityGroup(vpcID)
 	if err != nil {
 		return nil, errors.Wrap(err, "Creating Metabase Security Group")
 	}
 
 	// Security Group for the load balancer.
-	loadBalancerSecurityGroup, err := metabaseBuilder.NewLoadBalancerSecurityGroup(args.VpcID, metabasePort, metabaseSecurityGroup.ID().ToStringOutput())
+	loadBalancerSecurityGroup, err := metabaseBuilder.NewLoadBalancerSecurityGroup(vpcID, metabasePort, metabaseSecurityGroup.ID().ToStringOutput())
 	if err != nil {
 		return nil, errors.Wrap(err, "Creating Load Balancer Security Group")
 	}
@@ -111,7 +174,7 @@ func NewMetabase(ctx *pulumi.Context, name string, args *MetabaseArgs, opts ...p
 	}
 
 	// Create the MySQL cluster.
-	metabaseMysqlCluster, err := metabaseBuilder.NewMySQLCluster(args.DBSubnetIDs, metabasePassword, metabaseSecurityGroup.ID())
+	metabaseMysqlCluster, err := metabaseBuilder.NewMySQLCluster(dbSubnetIDs, metabasePassword, metabaseSecurityGroup.ID())
 	if err != nil {
 		return nil, errors.Wrap(err, "Creating MySQL Cluster")
 	}
@@ -119,7 +182,7 @@ func NewMetabase(ctx *pulumi.Context, name string, args *MetabaseArgs, opts ...p
 	var certificate *acm.Certificate
 	var certificateValidation *acm.CertificateValidation
 	var hostedZoneID pulumi.StringOutput
-	if args.Domain.DomainName != nil && args.Domain.HostedZoneName != nil {
+	if attachDomainName {
 		hostedZoneID = metabaseBuilder.GetHostedZoneId(*args.Domain.HostedZoneName)
 
 		certificate, certificateValidation, err = metabaseBuilder.NewDomainCertificate(*args.Domain.DomainName, hostedZoneID)
@@ -129,8 +192,8 @@ func NewMetabase(ctx *pulumi.Context, name string, args *MetabaseArgs, opts ...p
 	}
 
 	loadBalancer, targetGroup, lbListener, err := metabaseBuilder.NewLoadBalancer(
-		args.VpcID, args.LBSubnetIDs, loadBalancerSecurityGroup.ID(), metabasePort,
-		certificateValidation, certificate,
+		vpcID, lbSubnetIDs, loadBalancerSecurityGroup.ID(), metabasePort,
+		certificateValidation, certificate, attachDomainName,
 	)
 	if err != nil {
 		return nil, err
@@ -143,18 +206,19 @@ func NewMetabase(ctx *pulumi.Context, name string, args *MetabaseArgs, opts ...p
 		metabaseImageName = pulumi.Sprintf("metabase/metabase:%s", args.MetabaseVersion)
 	}
 
-	metabaseContainerDef := newMetabaseContainer(*metabaseMysqlCluster, metabaseImageName, regionName, args.EmailConfig)
+	metabaseContainerDef := newMetabaseContainer(*metabaseMysqlCluster, metabaseImageName, regionName)
 
 	err = metabaseBuilder.NewMetabaseService(
-		args.MetabaseVersion, regionName, metabaseContainerDef, args.ECSSubnetIDs,
+		args.MetabaseVersion, regionName, metabaseContainerDef, ecsSubnetIDs,
 		metabaseSecurityGroup.ID(), metabasePort, targetGroup.Arn, lbListener,
+		ecsAssignPublicIP,
 	)
 	if err != nil {
 		return nil, err
 	}
 
 	var metabaseDnsRecord *route53.Record
-	if args.Domain.DomainName != nil && args.Domain.HostedZoneName != nil {
+	if attachDomainName {
 		metabaseDnsRecord, err = route53.NewRecord(ctx, "metabase-dns", &route53.RecordArgs{
 			ZoneId: hostedZoneID,
 			Type:   pulumi.String("A"),
@@ -198,19 +262,17 @@ func newMetabaseEnvironmentVariable(name, value string) metabaseEnvironmentVaria
 	return metabaseEnvironmentVariable{Name: name, Value: value}
 }
 
-func newMetabaseContainer(cluster rds.Cluster, metabaseImageName, regionName pulumi.StringOutput, emailConfig MetabaseEmailConfig) pulumi.StringOutput {
+func newMetabaseContainer(cluster rds.Cluster, metabaseImageName, regionName pulumi.StringOutput) pulumi.StringOutput {
 	return pulumi.All(
 		cluster.Endpoint, cluster.MasterUsername, cluster.MasterPassword,
 		cluster.Port, cluster.DatabaseName, regionName, metabaseImageName,
-		emailConfig.Host, emailConfig.Username, emailConfig.Password,
-		emailConfig.Port, emailConfig.Security,
 	).ApplyT(func(values []interface{}) (string, error) {
 		hostname := values[0].(string)
 		username := values[1].(string)
 		password := values[2].(*string)
 		port := values[3].(int)
 		dbName := values[4].(string)
-		region := values[5].(string)
+		//region := values[5].(string)
 		imageName := values[6].(string)
 
 		metabaseEnv := []metabaseEnvironmentVariable{
@@ -223,20 +285,6 @@ func newMetabaseContainer(cluster rds.Cluster, metabaseImageName, regionName pul
 			newMetabaseEnvironmentVariable("MB_DB_HOST", hostname),
 		}
 
-		if values[7] != nil {
-			emailHost := values[7].(string)
-			emailUsername := values[8].(string)
-			emailPassword := values[9].(string)
-			emailPort := values[10].(int)
-			emailSecurity := values[11].(string)
-
-			metabaseEnv = append(metabaseEnv, newMetabaseEnvironmentVariable("MB_EMAIL_SMTP_USERNAME", emailUsername))
-			metabaseEnv = append(metabaseEnv, newMetabaseEnvironmentVariable("MB_EMAIL_SMTP_PASSWORD", emailPassword))
-			metabaseEnv = append(metabaseEnv, newMetabaseEnvironmentVariable("MB_EMAIL_SMTP_HOST", emailHost))
-			metabaseEnv = append(metabaseEnv, newMetabaseEnvironmentVariable("MB_EMAIL_SMTP_PORT", fmt.Sprintf("%d", emailPort)))
-			metabaseEnv = append(metabaseEnv, newMetabaseEnvironmentVariable("MB_EMAIL_SMTP_SECURITY", emailSecurity))
-		}
-
 		containerJSON, err := json.Marshal([]interface{}{
 			map[string]interface{}{
 				"name":  "metabase",
@@ -247,14 +295,14 @@ func newMetabaseContainer(cluster rds.Cluster, metabaseImageName, regionName pul
 					},
 				},
 				"environment": metabaseEnv,
-				"logConfiguration": map[string]interface{}{
-					"logDriver": "awslogs",
-					"options": map[string]interface{}{
-						"awslogs-group":         "/ecs/metabase",
-						"awslogs-region":        region,
-						"awslogs-stream-prefix": "ecs",
-					},
-				},
+				// "logConfiguration": map[string]interface{}{
+				// 	"logDriver": "awslogs",
+				// 	"options": map[string]interface{}{
+				// 		"awslogs-group":         "/ecs/metabase",
+				// 		"awslogs-region":        region,
+				// 		"awslogs-stream-prefix": "ecs",
+				// 	},
+				// },
 			},
 		})
 		if err != nil {

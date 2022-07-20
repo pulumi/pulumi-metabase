@@ -10,7 +10,7 @@ from . import _utilities
 
 __all__ = [
     'CustomDomainArgs',
-    'EmailConfigArgs',
+    'NetworkingArgs',
 ]
 
 @pulumi.input_type
@@ -27,7 +27,7 @@ class CustomDomainArgs:
             pulumi.set(__self__, "hosted_zone_name", hosted_zone_name)
 
     @property
-    @pulumi.getter(name="DomainName")
+    @pulumi.getter(name="domainName")
     def domain_name(self) -> Optional[pulumi.Input[str]]:
         return pulumi.get(self, "domain_name")
 
@@ -46,74 +46,58 @@ class CustomDomainArgs:
 
 
 @pulumi.input_type
-class EmailConfigArgs:
+class NetworkingArgs:
     def __init__(__self__, *,
-                 host: Optional[pulumi.Input[str]] = None,
-                 password: Optional[pulumi.Input[str]] = None,
-                 port: Optional[pulumi.Input[float]] = None,
-                 security: Optional[pulumi.Input[str]] = None,
-                 username: Optional[pulumi.Input[str]] = None):
+                 db_subnet_ids: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None,
+                 ecs_subnet_ids: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None,
+                 lb_subnet_ids: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]] = None):
         """
-        The email configuration (if any) for Metabase.
-
-        Adding email integration enables users to set alerts and system notifications.
-
-        https://www.metabase.com/docs/latest/administration-guide/02-setting-up-email.html
+        The options for networking.
+        :param pulumi.Input[Sequence[pulumi.Input[str]]] db_subnet_ids: The subnets to use for the RDS instance.
+        :param pulumi.Input[Sequence[pulumi.Input[str]]] ecs_subnet_ids: The subnets to use for the Fargate task.
+        :param pulumi.Input[Sequence[pulumi.Input[str]]] lb_subnet_ids: The subnets to use for the load balancer.
         """
-        if host is not None:
-            pulumi.set(__self__, "host", host)
-        if password is not None:
-            pulumi.set(__self__, "password", password)
-        if port is not None:
-            pulumi.set(__self__, "port", port)
-        if security is not None:
-            pulumi.set(__self__, "security", security)
-        if username is not None:
-            pulumi.set(__self__, "username", username)
+        if db_subnet_ids is not None:
+            pulumi.set(__self__, "db_subnet_ids", db_subnet_ids)
+        if ecs_subnet_ids is not None:
+            pulumi.set(__self__, "ecs_subnet_ids", ecs_subnet_ids)
+        if lb_subnet_ids is not None:
+            pulumi.set(__self__, "lb_subnet_ids", lb_subnet_ids)
 
     @property
-    @pulumi.getter
-    def host(self) -> Optional[pulumi.Input[str]]:
-        return pulumi.get(self, "host")
+    @pulumi.getter(name="dbSubnetIds")
+    def db_subnet_ids(self) -> Optional[pulumi.Input[Sequence[pulumi.Input[str]]]]:
+        """
+        The subnets to use for the RDS instance.
+        """
+        return pulumi.get(self, "db_subnet_ids")
 
-    @host.setter
-    def host(self, value: Optional[pulumi.Input[str]]):
-        pulumi.set(self, "host", value)
-
-    @property
-    @pulumi.getter
-    def password(self) -> Optional[pulumi.Input[str]]:
-        return pulumi.get(self, "password")
-
-    @password.setter
-    def password(self, value: Optional[pulumi.Input[str]]):
-        pulumi.set(self, "password", value)
+    @db_subnet_ids.setter
+    def db_subnet_ids(self, value: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]]):
+        pulumi.set(self, "db_subnet_ids", value)
 
     @property
-    @pulumi.getter
-    def port(self) -> Optional[pulumi.Input[float]]:
-        return pulumi.get(self, "port")
+    @pulumi.getter(name="ecsSubnetIds")
+    def ecs_subnet_ids(self) -> Optional[pulumi.Input[Sequence[pulumi.Input[str]]]]:
+        """
+        The subnets to use for the Fargate task.
+        """
+        return pulumi.get(self, "ecs_subnet_ids")
 
-    @port.setter
-    def port(self, value: Optional[pulumi.Input[float]]):
-        pulumi.set(self, "port", value)
-
-    @property
-    @pulumi.getter
-    def security(self) -> Optional[pulumi.Input[str]]:
-        return pulumi.get(self, "security")
-
-    @security.setter
-    def security(self, value: Optional[pulumi.Input[str]]):
-        pulumi.set(self, "security", value)
+    @ecs_subnet_ids.setter
+    def ecs_subnet_ids(self, value: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]]):
+        pulumi.set(self, "ecs_subnet_ids", value)
 
     @property
-    @pulumi.getter
-    def username(self) -> Optional[pulumi.Input[str]]:
-        return pulumi.get(self, "username")
+    @pulumi.getter(name="lbSubnetIds")
+    def lb_subnet_ids(self) -> Optional[pulumi.Input[Sequence[pulumi.Input[str]]]]:
+        """
+        The subnets to use for the load balancer.
+        """
+        return pulumi.get(self, "lb_subnet_ids")
 
-    @username.setter
-    def username(self, value: Optional[pulumi.Input[str]]):
-        pulumi.set(self, "username", value)
+    @lb_subnet_ids.setter
+    def lb_subnet_ids(self, value: Optional[pulumi.Input[Sequence[pulumi.Input[str]]]]):
+        pulumi.set(self, "lb_subnet_ids", value)
 
 

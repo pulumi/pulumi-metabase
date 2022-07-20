@@ -2,40 +2,10 @@
 ---
 name: metabase
 types:
-  metabase:index:EmailConfig:
-    description: |
-      The email configuration (if any) for Metabase.
-
-      Adding email integration enables users to set alerts and system notifications.
-
-      https://www.metabase.com/docs/latest/administration-guide/02-setting-up-email.html
+  metabase:index:Networking:
+    description: The options for networking.
     type: object
     properties:
-      host:
-        type: string
-      port:
-        type: number
-      security:
-        type: string
-      username:
-        type: string
-      password:
-        type: string
-  metabase:index:CustomDomain:
-    description: Options for setting a custom domain.
-    type: object
-    properties:
-      hostedZoneName:
-        type: string
-      DomainName:
-        type: string
-resources:
-  metabase:index:Metabase:
-    isComponent: true
-    inputProperties:
-      vpcId:
-        type: string
-        description: The VPC to use for the Metabase cluster.
       ecsSubnetIds:
         description: The subnets to use for the Fargate task.
         type: array
@@ -51,24 +21,29 @@ resources:
         type: array
         items:
           type: string
-      customDomain:
+  metabase:index:CustomDomain:
+    description: Options for setting a custom domain.
+    type: object
+    properties:
+      hostedZoneName:
+        type: string
+      domainName:
+        type: string
+resources:
+  metabase:index:Metabase:
+    isComponent: true
+    inputProperties:
+      vpcId:
+        type: string
+        description: The VPC to use for the Metabase cluster.
+      networking:
+        $ref: "#/types/metabase:index:Networking"
+      domain:
         $ref: "#/types/metabase:index:CustomDomain"
       metabaseVersion:
         description: The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
         type: string
-      emailConfig:
-        description: |
-          The email configuration (if any) for Metabase.
-
-          Adding email integration enables users to set alerts and system notifications.
-
-          https://www.metabase.com/docs/latest/administration-guide/02-setting-up-email.html
-        $ref: "#/types/metabase:index:EmailConfig"
-    requiredInputs:
-      - vpcId
-      - ecsSubnetIds
-      - dbSubnetIds
-      - lbSubnetIds
+    requiredInputs: []
     properties:
       dnsName:
         type: string

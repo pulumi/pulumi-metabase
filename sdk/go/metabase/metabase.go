@@ -7,7 +7,6 @@ import (
 	"context"
 	"reflect"
 
-	"github.com/pkg/errors"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
@@ -24,21 +23,9 @@ type Metabase struct {
 func NewMetabase(ctx *pulumi.Context,
 	name string, args *MetabaseArgs, opts ...pulumi.ResourceOption) (*Metabase, error) {
 	if args == nil {
-		return nil, errors.New("missing one or more required arguments")
+		args = &MetabaseArgs{}
 	}
 
-	if args.DbSubnetIds == nil {
-		return nil, errors.New("invalid value for required argument 'DbSubnetIds'")
-	}
-	if args.EcsSubnetIds == nil {
-		return nil, errors.New("invalid value for required argument 'EcsSubnetIds'")
-	}
-	if args.LbSubnetIds == nil {
-		return nil, errors.New("invalid value for required argument 'LbSubnetIds'")
-	}
-	if args.VpcId == nil {
-		return nil, errors.New("invalid value for required argument 'VpcId'")
-	}
 	var resource Metabase
 	err := ctx.RegisterRemoteComponentResource("metabase:index:Metabase", name, args, &resource, opts...)
 	if err != nil {
@@ -48,44 +35,22 @@ func NewMetabase(ctx *pulumi.Context,
 }
 
 type metabaseArgs struct {
-	CustomDomain *CustomDomain `pulumi:"customDomain"`
-	// The subnets to use for the RDS instance.
-	DbSubnetIds []string `pulumi:"dbSubnetIds"`
-	// The subnets to use for the Fargate task.
-	EcsSubnetIds []string `pulumi:"ecsSubnetIds"`
-	// The email configuration (if any) for Metabase.
-	//
-	// Adding email integration enables users to set alerts and system notifications.
-	//
-	// https://www.metabase.com/docs/latest/administration-guide/02-setting-up-email.html
-	EmailConfig *EmailConfig `pulumi:"emailConfig"`
-	// The subnets to use for the load balancer.
-	LbSubnetIds []string `pulumi:"lbSubnetIds"`
+	Domain *CustomDomain `pulumi:"domain"`
 	// The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
-	MetabaseVersion *string `pulumi:"metabaseVersion"`
+	MetabaseVersion *string     `pulumi:"metabaseVersion"`
+	Networking      *Networking `pulumi:"networking"`
 	// The VPC to use for the Metabase cluster.
-	VpcId string `pulumi:"vpcId"`
+	VpcId *string `pulumi:"vpcId"`
 }
 
 // The set of arguments for constructing a Metabase resource.
 type MetabaseArgs struct {
-	CustomDomain CustomDomainPtrInput
-	// The subnets to use for the RDS instance.
-	DbSubnetIds pulumi.StringArrayInput
-	// The subnets to use for the Fargate task.
-	EcsSubnetIds pulumi.StringArrayInput
-	// The email configuration (if any) for Metabase.
-	//
-	// Adding email integration enables users to set alerts and system notifications.
-	//
-	// https://www.metabase.com/docs/latest/administration-guide/02-setting-up-email.html
-	EmailConfig EmailConfigPtrInput
-	// The subnets to use for the load balancer.
-	LbSubnetIds pulumi.StringArrayInput
+	Domain CustomDomainPtrInput
 	// The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
 	MetabaseVersion pulumi.StringPtrInput
+	Networking      NetworkingPtrInput
 	// The VPC to use for the Metabase cluster.
-	VpcId pulumi.StringInput
+	VpcId pulumi.StringPtrInput
 }
 
 func (MetabaseArgs) ElementType() reflect.Type {

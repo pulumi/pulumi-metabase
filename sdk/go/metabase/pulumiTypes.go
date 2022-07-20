@@ -12,7 +12,7 @@ import (
 
 // Options for setting a custom domain.
 type CustomDomain struct {
-	DomainName     *string `pulumi:"DomainName"`
+	DomainName     *string `pulumi:"domainName"`
 	HostedZoneName *string `pulumi:"hostedZoneName"`
 }
 
@@ -29,7 +29,7 @@ type CustomDomainInput interface {
 
 // Options for setting a custom domain.
 type CustomDomainArgs struct {
-	DomainName     pulumi.StringPtrInput `pulumi:"DomainName"`
+	DomainName     pulumi.StringPtrInput `pulumi:"domainName"`
 	HostedZoneName pulumi.StringPtrInput `pulumi:"hostedZoneName"`
 }
 
@@ -161,221 +161,191 @@ func (o CustomDomainPtrOutput) HostedZoneName() pulumi.StringPtrOutput {
 	}).(pulumi.StringPtrOutput)
 }
 
-// The email configuration (if any) for Metabase.
-//
-// Adding email integration enables users to set alerts and system notifications.
-//
-// https://www.metabase.com/docs/latest/administration-guide/02-setting-up-email.html
-type EmailConfig struct {
-	Host     *string  `pulumi:"host"`
-	Password *string  `pulumi:"password"`
-	Port     *float64 `pulumi:"port"`
-	Security *string  `pulumi:"security"`
-	Username *string  `pulumi:"username"`
+// The options for networking.
+type Networking struct {
+	// The subnets to use for the RDS instance.
+	DbSubnetIds []string `pulumi:"dbSubnetIds"`
+	// The subnets to use for the Fargate task.
+	EcsSubnetIds []string `pulumi:"ecsSubnetIds"`
+	// The subnets to use for the load balancer.
+	LbSubnetIds []string `pulumi:"lbSubnetIds"`
 }
 
-// EmailConfigInput is an input type that accepts EmailConfigArgs and EmailConfigOutput values.
-// You can construct a concrete instance of `EmailConfigInput` via:
+// NetworkingInput is an input type that accepts NetworkingArgs and NetworkingOutput values.
+// You can construct a concrete instance of `NetworkingInput` via:
 //
-//          EmailConfigArgs{...}
-type EmailConfigInput interface {
+//          NetworkingArgs{...}
+type NetworkingInput interface {
 	pulumi.Input
 
-	ToEmailConfigOutput() EmailConfigOutput
-	ToEmailConfigOutputWithContext(context.Context) EmailConfigOutput
+	ToNetworkingOutput() NetworkingOutput
+	ToNetworkingOutputWithContext(context.Context) NetworkingOutput
 }
 
-// The email configuration (if any) for Metabase.
+// The options for networking.
+type NetworkingArgs struct {
+	// The subnets to use for the RDS instance.
+	DbSubnetIds pulumi.StringArrayInput `pulumi:"dbSubnetIds"`
+	// The subnets to use for the Fargate task.
+	EcsSubnetIds pulumi.StringArrayInput `pulumi:"ecsSubnetIds"`
+	// The subnets to use for the load balancer.
+	LbSubnetIds pulumi.StringArrayInput `pulumi:"lbSubnetIds"`
+}
+
+func (NetworkingArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*Networking)(nil)).Elem()
+}
+
+func (i NetworkingArgs) ToNetworkingOutput() NetworkingOutput {
+	return i.ToNetworkingOutputWithContext(context.Background())
+}
+
+func (i NetworkingArgs) ToNetworkingOutputWithContext(ctx context.Context) NetworkingOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NetworkingOutput)
+}
+
+func (i NetworkingArgs) ToNetworkingPtrOutput() NetworkingPtrOutput {
+	return i.ToNetworkingPtrOutputWithContext(context.Background())
+}
+
+func (i NetworkingArgs) ToNetworkingPtrOutputWithContext(ctx context.Context) NetworkingPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NetworkingOutput).ToNetworkingPtrOutputWithContext(ctx)
+}
+
+// NetworkingPtrInput is an input type that accepts NetworkingArgs, NetworkingPtr and NetworkingPtrOutput values.
+// You can construct a concrete instance of `NetworkingPtrInput` via:
 //
-// Adding email integration enables users to set alerts and system notifications.
-//
-// https://www.metabase.com/docs/latest/administration-guide/02-setting-up-email.html
-type EmailConfigArgs struct {
-	Host     pulumi.StringPtrInput  `pulumi:"host"`
-	Password pulumi.StringPtrInput  `pulumi:"password"`
-	Port     pulumi.Float64PtrInput `pulumi:"port"`
-	Security pulumi.StringPtrInput  `pulumi:"security"`
-	Username pulumi.StringPtrInput  `pulumi:"username"`
-}
-
-func (EmailConfigArgs) ElementType() reflect.Type {
-	return reflect.TypeOf((*EmailConfig)(nil)).Elem()
-}
-
-func (i EmailConfigArgs) ToEmailConfigOutput() EmailConfigOutput {
-	return i.ToEmailConfigOutputWithContext(context.Background())
-}
-
-func (i EmailConfigArgs) ToEmailConfigOutputWithContext(ctx context.Context) EmailConfigOutput {
-	return pulumi.ToOutputWithContext(ctx, i).(EmailConfigOutput)
-}
-
-func (i EmailConfigArgs) ToEmailConfigPtrOutput() EmailConfigPtrOutput {
-	return i.ToEmailConfigPtrOutputWithContext(context.Background())
-}
-
-func (i EmailConfigArgs) ToEmailConfigPtrOutputWithContext(ctx context.Context) EmailConfigPtrOutput {
-	return pulumi.ToOutputWithContext(ctx, i).(EmailConfigOutput).ToEmailConfigPtrOutputWithContext(ctx)
-}
-
-// EmailConfigPtrInput is an input type that accepts EmailConfigArgs, EmailConfigPtr and EmailConfigPtrOutput values.
-// You can construct a concrete instance of `EmailConfigPtrInput` via:
-//
-//          EmailConfigArgs{...}
+//          NetworkingArgs{...}
 //
 //  or:
 //
 //          nil
-type EmailConfigPtrInput interface {
+type NetworkingPtrInput interface {
 	pulumi.Input
 
-	ToEmailConfigPtrOutput() EmailConfigPtrOutput
-	ToEmailConfigPtrOutputWithContext(context.Context) EmailConfigPtrOutput
+	ToNetworkingPtrOutput() NetworkingPtrOutput
+	ToNetworkingPtrOutputWithContext(context.Context) NetworkingPtrOutput
 }
 
-type emailConfigPtrType EmailConfigArgs
+type networkingPtrType NetworkingArgs
 
-func EmailConfigPtr(v *EmailConfigArgs) EmailConfigPtrInput {
-	return (*emailConfigPtrType)(v)
+func NetworkingPtr(v *NetworkingArgs) NetworkingPtrInput {
+	return (*networkingPtrType)(v)
 }
 
-func (*emailConfigPtrType) ElementType() reflect.Type {
-	return reflect.TypeOf((**EmailConfig)(nil)).Elem()
+func (*networkingPtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**Networking)(nil)).Elem()
 }
 
-func (i *emailConfigPtrType) ToEmailConfigPtrOutput() EmailConfigPtrOutput {
-	return i.ToEmailConfigPtrOutputWithContext(context.Background())
+func (i *networkingPtrType) ToNetworkingPtrOutput() NetworkingPtrOutput {
+	return i.ToNetworkingPtrOutputWithContext(context.Background())
 }
 
-func (i *emailConfigPtrType) ToEmailConfigPtrOutputWithContext(ctx context.Context) EmailConfigPtrOutput {
-	return pulumi.ToOutputWithContext(ctx, i).(EmailConfigPtrOutput)
+func (i *networkingPtrType) ToNetworkingPtrOutputWithContext(ctx context.Context) NetworkingPtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(NetworkingPtrOutput)
 }
 
-// The email configuration (if any) for Metabase.
-//
-// Adding email integration enables users to set alerts and system notifications.
-//
-// https://www.metabase.com/docs/latest/administration-guide/02-setting-up-email.html
-type EmailConfigOutput struct{ *pulumi.OutputState }
+// The options for networking.
+type NetworkingOutput struct{ *pulumi.OutputState }
 
-func (EmailConfigOutput) ElementType() reflect.Type {
-	return reflect.TypeOf((*EmailConfig)(nil)).Elem()
+func (NetworkingOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*Networking)(nil)).Elem()
 }
 
-func (o EmailConfigOutput) ToEmailConfigOutput() EmailConfigOutput {
+func (o NetworkingOutput) ToNetworkingOutput() NetworkingOutput {
 	return o
 }
 
-func (o EmailConfigOutput) ToEmailConfigOutputWithContext(ctx context.Context) EmailConfigOutput {
+func (o NetworkingOutput) ToNetworkingOutputWithContext(ctx context.Context) NetworkingOutput {
 	return o
 }
 
-func (o EmailConfigOutput) ToEmailConfigPtrOutput() EmailConfigPtrOutput {
-	return o.ToEmailConfigPtrOutputWithContext(context.Background())
+func (o NetworkingOutput) ToNetworkingPtrOutput() NetworkingPtrOutput {
+	return o.ToNetworkingPtrOutputWithContext(context.Background())
 }
 
-func (o EmailConfigOutput) ToEmailConfigPtrOutputWithContext(ctx context.Context) EmailConfigPtrOutput {
-	return o.ApplyTWithContext(ctx, func(_ context.Context, v EmailConfig) *EmailConfig {
+func (o NetworkingOutput) ToNetworkingPtrOutputWithContext(ctx context.Context) NetworkingPtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v Networking) *Networking {
 		return &v
-	}).(EmailConfigPtrOutput)
+	}).(NetworkingPtrOutput)
 }
 
-func (o EmailConfigOutput) Host() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v EmailConfig) *string { return v.Host }).(pulumi.StringPtrOutput)
+// The subnets to use for the RDS instance.
+func (o NetworkingOutput) DbSubnetIds() pulumi.StringArrayOutput {
+	return o.ApplyT(func(v Networking) []string { return v.DbSubnetIds }).(pulumi.StringArrayOutput)
 }
 
-func (o EmailConfigOutput) Password() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v EmailConfig) *string { return v.Password }).(pulumi.StringPtrOutput)
+// The subnets to use for the Fargate task.
+func (o NetworkingOutput) EcsSubnetIds() pulumi.StringArrayOutput {
+	return o.ApplyT(func(v Networking) []string { return v.EcsSubnetIds }).(pulumi.StringArrayOutput)
 }
 
-func (o EmailConfigOutput) Port() pulumi.Float64PtrOutput {
-	return o.ApplyT(func(v EmailConfig) *float64 { return v.Port }).(pulumi.Float64PtrOutput)
+// The subnets to use for the load balancer.
+func (o NetworkingOutput) LbSubnetIds() pulumi.StringArrayOutput {
+	return o.ApplyT(func(v Networking) []string { return v.LbSubnetIds }).(pulumi.StringArrayOutput)
 }
 
-func (o EmailConfigOutput) Security() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v EmailConfig) *string { return v.Security }).(pulumi.StringPtrOutput)
+type NetworkingPtrOutput struct{ *pulumi.OutputState }
+
+func (NetworkingPtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**Networking)(nil)).Elem()
 }
 
-func (o EmailConfigOutput) Username() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v EmailConfig) *string { return v.Username }).(pulumi.StringPtrOutput)
-}
-
-type EmailConfigPtrOutput struct{ *pulumi.OutputState }
-
-func (EmailConfigPtrOutput) ElementType() reflect.Type {
-	return reflect.TypeOf((**EmailConfig)(nil)).Elem()
-}
-
-func (o EmailConfigPtrOutput) ToEmailConfigPtrOutput() EmailConfigPtrOutput {
+func (o NetworkingPtrOutput) ToNetworkingPtrOutput() NetworkingPtrOutput {
 	return o
 }
 
-func (o EmailConfigPtrOutput) ToEmailConfigPtrOutputWithContext(ctx context.Context) EmailConfigPtrOutput {
+func (o NetworkingPtrOutput) ToNetworkingPtrOutputWithContext(ctx context.Context) NetworkingPtrOutput {
 	return o
 }
 
-func (o EmailConfigPtrOutput) Elem() EmailConfigOutput {
-	return o.ApplyT(func(v *EmailConfig) EmailConfig {
+func (o NetworkingPtrOutput) Elem() NetworkingOutput {
+	return o.ApplyT(func(v *Networking) Networking {
 		if v != nil {
 			return *v
 		}
-		var ret EmailConfig
+		var ret Networking
 		return ret
-	}).(EmailConfigOutput)
+	}).(NetworkingOutput)
 }
 
-func (o EmailConfigPtrOutput) Host() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v *EmailConfig) *string {
+// The subnets to use for the RDS instance.
+func (o NetworkingPtrOutput) DbSubnetIds() pulumi.StringArrayOutput {
+	return o.ApplyT(func(v *Networking) []string {
 		if v == nil {
 			return nil
 		}
-		return v.Host
-	}).(pulumi.StringPtrOutput)
+		return v.DbSubnetIds
+	}).(pulumi.StringArrayOutput)
 }
 
-func (o EmailConfigPtrOutput) Password() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v *EmailConfig) *string {
+// The subnets to use for the Fargate task.
+func (o NetworkingPtrOutput) EcsSubnetIds() pulumi.StringArrayOutput {
+	return o.ApplyT(func(v *Networking) []string {
 		if v == nil {
 			return nil
 		}
-		return v.Password
-	}).(pulumi.StringPtrOutput)
+		return v.EcsSubnetIds
+	}).(pulumi.StringArrayOutput)
 }
 
-func (o EmailConfigPtrOutput) Port() pulumi.Float64PtrOutput {
-	return o.ApplyT(func(v *EmailConfig) *float64 {
+// The subnets to use for the load balancer.
+func (o NetworkingPtrOutput) LbSubnetIds() pulumi.StringArrayOutput {
+	return o.ApplyT(func(v *Networking) []string {
 		if v == nil {
 			return nil
 		}
-		return v.Port
-	}).(pulumi.Float64PtrOutput)
-}
-
-func (o EmailConfigPtrOutput) Security() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v *EmailConfig) *string {
-		if v == nil {
-			return nil
-		}
-		return v.Security
-	}).(pulumi.StringPtrOutput)
-}
-
-func (o EmailConfigPtrOutput) Username() pulumi.StringPtrOutput {
-	return o.ApplyT(func(v *EmailConfig) *string {
-		if v == nil {
-			return nil
-		}
-		return v.Username
-	}).(pulumi.StringPtrOutput)
+		return v.LbSubnetIds
+	}).(pulumi.StringArrayOutput)
 }
 
 func init() {
 	pulumi.RegisterInputType(reflect.TypeOf((*CustomDomainInput)(nil)).Elem(), CustomDomainArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*CustomDomainPtrInput)(nil)).Elem(), CustomDomainArgs{})
-	pulumi.RegisterInputType(reflect.TypeOf((*EmailConfigInput)(nil)).Elem(), EmailConfigArgs{})
-	pulumi.RegisterInputType(reflect.TypeOf((*EmailConfigPtrInput)(nil)).Elem(), EmailConfigArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NetworkingInput)(nil)).Elem(), NetworkingArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*NetworkingPtrInput)(nil)).Elem(), NetworkingArgs{})
 	pulumi.RegisterOutputType(CustomDomainOutput{})
 	pulumi.RegisterOutputType(CustomDomainPtrOutput{})
-	pulumi.RegisterOutputType(EmailConfigOutput{})
-	pulumi.RegisterOutputType(EmailConfigPtrOutput{})
+	pulumi.RegisterOutputType(NetworkingOutput{})
+	pulumi.RegisterOutputType(NetworkingPtrOutput{})
 }
