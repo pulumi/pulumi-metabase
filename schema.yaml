@@ -31,14 +31,99 @@ types:
         type: string
 resources:
   metabase:index:Metabase:
+    description: |
+      This resources provisions a container running Metabase on AWS ECS Fargate. By default
+      the resource will run the service in the AWS Account's Default VPC unless a VPC is defined. This
+      resource will also deploy the `latest` version of Metabase unless a version is supplied.
+
+      You can provide specific subnets to host the Load Balancer, Database, and ECS Service, as well
+      as provide a custom domain name for the service.
+
+      {{% examples %}}
+      ## Example Usage
+
+      {{% example %}}
+      ### Simple
+
+      ```typescript
+      import * as metabase from "@pulumi/metabase";
+
+      const metabaseService = new metabase.Metabase("demo", {});
+
+      export const url = metabaseService.dnsName;
+      ```
+
+      ```python
+      import pulumi
+      import pulumi_metabase as metabase
+
+      metabaseService = metabase.Metabase('demo')
+
+      pulumi.export('url', metabaseService.dns_name)
+      ```
+
+      ```go
+      package main
+
+      import (
+          "github.com/pulumi/pulumi-metabase/sdk/go/metabase"
+          "github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+      )
+
+      func main() {
+          pulumi.Run(func(ctx *pulumi.Context) error {
+              metabaseService, err := metabase.Metabase(ctx, "demo", nil)
+              if err != nil {
+                  return err
+              }
+
+              ctx.Export("url", metabaseService.DnsName)
+
+              return nil
+          })
+      }
+      ```
+
+      ```csharp
+      using Pulumi;
+      using Pulumi.Metabase;
+      using Pulumi.Metabase.Inputs;
+
+      class MyStack : Stack
+      {
+          public MyStack()
+          {
+              var metabaseService = new Metabase("demo", new MetabaseArgs());
+
+              this.Url = Output.Create<string>(metabaseService.DnsName);
+          }
+
+          [Output]
+          public Output<string> Url { get; set; }
+      }
+      ```
+
+      ```yaml
+      name: metabase-yaml
+      runtime: yaml
+      resources:
+          metabaseService:
+              type: "metabase:index:Metabase"
+      outputs:
+          url: ${metabaseService.dnsName}
+      ```
+      {{ /example }}
+      {{% examples %}}
     isComponent: true
     inputProperties:
       vpcId:
         type: string
-        description: The VPC to use for the Metabase cluster.
+        description: The VPC to use for the Metabase service. If left blank then the default VPC will be used.
       networking:
+        description: Optionally provide specific subnet IDs to run the different resources of Metabase.
         $ref: "#/types/metabase:index:Networking"
       domain:
+        description: Optionally provide a hosted zone and domain name for the Metabase service.
         $ref: "#/types/metabase:index:CustomDomain"
       metabaseVersion:
         description: The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
