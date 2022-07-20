@@ -10,6 +10,38 @@ import (
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
+// This resources provisions a container running Metabase on AWS ECS Fargate. By default
+// the resource will run the service in the AWS Account's Default VPC unless a VPC is defined. This
+// resource will also deploy the `latest` version of Metabase unless a version is supplied.
+//
+// You can provide specific subnets to host the Load Balancer, Database, and ECS Service, as well
+// as provide a custom domain name for the service.
+//
+// ## Example Usage
+// ### Simple
+//
+// ```go
+// package main
+//
+// import (
+//     "github.com/pulumi/pulumi-metabase/sdk/go/metabase"
+//     "github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+// )
+//
+// func main() {
+//     pulumi.Run(func(ctx *pulumi.Context) error {
+//         metabaseService, err := metabase.Metabase(ctx, "demo", nil)
+//         if err != nil {
+//             return err
+//         }
+//
+//         ctx.Export("url", metabaseService.DnsName)
+//
+//         return nil
+//     })
+// }
+// ```
+// {{ /example }}
 type Metabase struct {
 	pulumi.ResourceState
 
@@ -35,21 +67,25 @@ func NewMetabase(ctx *pulumi.Context,
 }
 
 type metabaseArgs struct {
+	// Optionally provide a hosted zone and domain name for the Metabase service.
 	Domain *CustomDomain `pulumi:"domain"`
 	// The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
-	MetabaseVersion *string     `pulumi:"metabaseVersion"`
-	Networking      *Networking `pulumi:"networking"`
-	// The VPC to use for the Metabase cluster.
+	MetabaseVersion *string `pulumi:"metabaseVersion"`
+	// Optionally provide specific subnet IDs to run the different resources of Metabase.
+	Networking *Networking `pulumi:"networking"`
+	// The VPC to use for the Metabase service. If left blank then the default VPC will be used.
 	VpcId *string `pulumi:"vpcId"`
 }
 
 // The set of arguments for constructing a Metabase resource.
 type MetabaseArgs struct {
+	// Optionally provide a hosted zone and domain name for the Metabase service.
 	Domain CustomDomainPtrInput
 	// The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
 	MetabaseVersion pulumi.StringPtrInput
-	Networking      NetworkingPtrInput
-	// The VPC to use for the Metabase cluster.
+	// Optionally provide specific subnet IDs to run the different resources of Metabase.
+	Networking NetworkingPtrInput
+	// The VPC to use for the Metabase service. If left blank then the default VPC will be used.
 	VpcId pulumi.StringPtrInput
 }
 

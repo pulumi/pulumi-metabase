@@ -5,6 +5,26 @@ import * as pulumi from "@pulumi/pulumi";
 import { input as inputs, output as outputs } from "./types";
 import * as utilities from "./utilities";
 
+/**
+ * This resources provisions a container running Metabase on AWS ECS Fargate. By default
+ * the resource will run the service in the AWS Account's Default VPC unless a VPC is defined. This
+ * resource will also deploy the `latest` version of Metabase unless a version is supplied.
+ *
+ * You can provide specific subnets to host the Load Balancer, Database, and ECS Service, as well
+ * as provide a custom domain name for the service.
+ *
+ * ## Example Usage
+ * ### Simple
+ *
+ * ```typescript
+ * import * as metabase from "@pulumi/metabase";
+ *
+ * const metabaseService = new metabase.Metabase("demo", {});
+ *
+ * export const url = metabaseService.dnsName;
+ * ```
+ * {{ /example }}
+ */
 export class Metabase extends pulumi.ComponentResource {
     /** @internal */
     public static readonly __pulumiType = 'metabase:index:Metabase';
@@ -59,14 +79,20 @@ export class Metabase extends pulumi.ComponentResource {
  * The set of arguments for constructing a Metabase resource.
  */
 export interface MetabaseArgs {
+    /**
+     * Optionally provide a hosted zone and domain name for the Metabase service.
+     */
     domain?: pulumi.Input<inputs.CustomDomainArgs>;
     /**
      * The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
      */
     metabaseVersion?: pulumi.Input<string>;
+    /**
+     * Optionally provide specific subnet IDs to run the different resources of Metabase.
+     */
     networking?: pulumi.Input<inputs.NetworkingArgs>;
     /**
-     * The VPC to use for the Metabase cluster.
+     * The VPC to use for the Metabase service. If left blank then the default VPC will be used.
      */
     vpcId?: pulumi.Input<string>;
 }

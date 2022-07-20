@@ -20,8 +20,10 @@ class MetabaseArgs:
                  vpc_id: Optional[pulumi.Input[str]] = None):
         """
         The set of arguments for constructing a Metabase resource.
+        :param pulumi.Input['CustomDomainArgs'] domain: Optionally provide a hosted zone and domain name for the Metabase service.
         :param pulumi.Input[str] metabase_version: The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
-        :param pulumi.Input[str] vpc_id: The VPC to use for the Metabase cluster.
+        :param pulumi.Input['NetworkingArgs'] networking: Optionally provide specific subnet IDs to run the different resources of Metabase.
+        :param pulumi.Input[str] vpc_id: The VPC to use for the Metabase service. If left blank then the default VPC will be used.
         """
         if domain is not None:
             pulumi.set(__self__, "domain", domain)
@@ -35,6 +37,9 @@ class MetabaseArgs:
     @property
     @pulumi.getter
     def domain(self) -> Optional[pulumi.Input['CustomDomainArgs']]:
+        """
+        Optionally provide a hosted zone and domain name for the Metabase service.
+        """
         return pulumi.get(self, "domain")
 
     @domain.setter
@@ -56,6 +61,9 @@ class MetabaseArgs:
     @property
     @pulumi.getter
     def networking(self) -> Optional[pulumi.Input['NetworkingArgs']]:
+        """
+        Optionally provide specific subnet IDs to run the different resources of Metabase.
+        """
         return pulumi.get(self, "networking")
 
     @networking.setter
@@ -66,7 +74,7 @@ class MetabaseArgs:
     @pulumi.getter(name="vpcId")
     def vpc_id(self) -> Optional[pulumi.Input[str]]:
         """
-        The VPC to use for the Metabase cluster.
+        The VPC to use for the Metabase service. If left blank then the default VPC will be used.
         """
         return pulumi.get(self, "vpc_id")
 
@@ -86,11 +94,32 @@ class Metabase(pulumi.ComponentResource):
                  vpc_id: Optional[pulumi.Input[str]] = None,
                  __props__=None):
         """
-        Create a Metabase resource with the given unique name, props, and options.
+        This resources provisions a container running Metabase on AWS ECS Fargate. By default
+        the resource will run the service in the AWS Account's Default VPC unless a VPC is defined. This
+        resource will also deploy the `latest` version of Metabase unless a version is supplied.
+
+        You can provide specific subnets to host the Load Balancer, Database, and ECS Service, as well
+        as provide a custom domain name for the service.
+
+        ## Example Usage
+        ### Simple
+
+        ```python
+        import pulumi
+        import pulumi_metabase as metabase
+
+        metabaseService = metabase.Metabase('demo')
+
+        pulumi.export('url', metabaseService.dns_name)
+        ```
+        {{ /example }}
+
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
+        :param pulumi.Input[pulumi.InputType['CustomDomainArgs']] domain: Optionally provide a hosted zone and domain name for the Metabase service.
         :param pulumi.Input[str] metabase_version: The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
-        :param pulumi.Input[str] vpc_id: The VPC to use for the Metabase cluster.
+        :param pulumi.Input[pulumi.InputType['NetworkingArgs']] networking: Optionally provide specific subnet IDs to run the different resources of Metabase.
+        :param pulumi.Input[str] vpc_id: The VPC to use for the Metabase service. If left blank then the default VPC will be used.
         """
         ...
     @overload
@@ -99,7 +128,26 @@ class Metabase(pulumi.ComponentResource):
                  args: Optional[MetabaseArgs] = None,
                  opts: Optional[pulumi.ResourceOptions] = None):
         """
-        Create a Metabase resource with the given unique name, props, and options.
+        This resources provisions a container running Metabase on AWS ECS Fargate. By default
+        the resource will run the service in the AWS Account's Default VPC unless a VPC is defined. This
+        resource will also deploy the `latest` version of Metabase unless a version is supplied.
+
+        You can provide specific subnets to host the Load Balancer, Database, and ECS Service, as well
+        as provide a custom domain name for the service.
+
+        ## Example Usage
+        ### Simple
+
+        ```python
+        import pulumi
+        import pulumi_metabase as metabase
+
+        metabaseService = metabase.Metabase('demo')
+
+        pulumi.export('url', metabaseService.dns_name)
+        ```
+        {{ /example }}
+
         :param str resource_name: The name of the resource.
         :param MetabaseArgs args: The arguments to use to populate this resource's properties.
         :param pulumi.ResourceOptions opts: Options for the resource.

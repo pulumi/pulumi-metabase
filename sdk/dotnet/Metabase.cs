@@ -9,6 +9,37 @@ using Pulumi.Serialization;
 
 namespace Pulumi.Metabase
 {
+    /// <summary>
+    /// This resources provisions a container running Metabase on AWS ECS Fargate. By default
+    /// the resource will run the service in the AWS Account's Default VPC unless a VPC is defined. This
+    /// resource will also deploy the `latest` version of Metabase unless a version is supplied.
+    /// 
+    /// You can provide specific subnets to host the Load Balancer, Database, and ECS Service, as well
+    /// as provide a custom domain name for the service.
+    /// 
+    /// ## Example Usage
+    /// ### Simple
+    /// 
+    /// ```csharp
+    /// using Pulumi;
+    /// using Pulumi.Metabase;
+    /// using Pulumi.Metabase.Inputs;
+    /// 
+    /// class MyStack : Stack
+    /// {
+    ///     public MyStack()
+    ///     {
+    ///         var metabaseService = new Metabase("demo", new MetabaseArgs());
+    /// 
+    ///         this.Url = Output.Create&lt;string&gt;(metabaseService.DnsName);
+    ///     }
+    /// 
+    ///     [Output]
+    ///     public Output&lt;string&gt; Url { get; set; }
+    /// }
+    /// ```
+    /// {{ /example }}
+    /// </summary>
     [MetabaseResourceType("metabase:index:Metabase")]
     public partial class Metabase : Pulumi.ComponentResource
     {
@@ -52,6 +83,9 @@ namespace Pulumi.Metabase
 
     public sealed class MetabaseArgs : Pulumi.ResourceArgs
     {
+        /// <summary>
+        /// Optionally provide a hosted zone and domain name for the Metabase service.
+        /// </summary>
         [Input("domain")]
         public Input<Inputs.CustomDomainArgs>? Domain { get; set; }
 
@@ -61,11 +95,14 @@ namespace Pulumi.Metabase
         [Input("metabaseVersion")]
         public Input<string>? MetabaseVersion { get; set; }
 
+        /// <summary>
+        /// Optionally provide specific subnet IDs to run the different resources of Metabase.
+        /// </summary>
         [Input("networking")]
         public Input<Inputs.NetworkingArgs>? Networking { get; set; }
 
         /// <summary>
-        /// The VPC to use for the Metabase cluster.
+        /// The VPC to use for the Metabase service. If left blank then the default VPC will be used.
         /// </summary>
         [Input("vpcId")]
         public Input<string>? VpcId { get; set; }
