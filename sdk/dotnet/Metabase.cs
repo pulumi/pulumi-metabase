@@ -18,23 +18,68 @@ namespace Pulumi.Metabase
     /// as provide a custom domain name for the service.
     /// 
     /// ## Example Usage
-    /// ### Simple
+    /// ### Default
     /// 
     /// ```csharp
     /// using Pulumi;
-    /// using Pulumi.Metabase;
-    /// using Pulumi.Metabase.Inputs;
+    /// using Metabase = Pulumi.Metabase;
     /// 
     /// class MyStack : Stack
     /// {
     ///     public MyStack()
     ///     {
-    ///         var metabaseService = new Metabase("demo", new MetabaseArgs());
-    /// 
-    ///         this.Url = Output.Create&lt;string&gt;(metabaseService.DnsName);
+    ///         var metabaseService = new Metabase.Metabase("metabaseService", new Metabase.MetabaseArgs
+    ///         {
+    ///         });
+    ///         this.Url = metabaseService.DnsName;
     ///     }
     /// 
-    ///     [Output]
+    ///     [Output("url")]
+    ///     public Output&lt;string&gt; Url { get; set; }
+    /// }
+    /// ```
+    /// {{ /example }}
+    /// ### Custom Domain &amp; Networking
+    /// 
+    /// ```csharp
+    /// using Pulumi;
+    /// using Metabase = Pulumi.Metabase;
+    /// 
+    /// class MyStack : Stack
+    /// {
+    ///     public MyStack()
+    ///     {
+    ///         var metabaseService = new Metabase.Metabase("metabaseService", new Metabase.MetabaseArgs
+    ///         {
+    ///             VpcId = "vpc-123",
+    ///             Networking = new Metabase.Inputs.NetworkingArgs
+    ///             {
+    ///                 EcsSubnetIds =
+    ///                 {
+    ///                     "subnet-123",
+    ///                     "subnet-456",
+    ///                 },
+    ///                 DbSubnetIds =
+    ///                 {
+    ///                     "subnet-789",
+    ///                     "subnet-abc",
+    ///                 },
+    ///                 LbSubnetIds =
+    ///                 {
+    ///                     "subnet-def",
+    ///                     "subnet-ghi",
+    ///                 },
+    ///             },
+    ///             Domain = new Metabase.Inputs.CustomDomainArgs
+    ///             {
+    ///                 HostedZoneName = "example.com",
+    ///                 DomainName = "metabase.example.com",
+    ///             },
+    ///         });
+    ///         this.Url = metabaseService.DnsName;
+    ///     }
+    /// 
+    ///     [Output("url")]
     ///     public Output&lt;string&gt; Url { get; set; }
     /// }
     /// ```

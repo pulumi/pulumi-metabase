@@ -18,27 +18,67 @@ import (
 // as provide a custom domain name for the service.
 //
 // ## Example Usage
-// ### Simple
+// ### Default
 //
 // ```go
 // package main
 //
 // import (
-//     "github.com/pulumi/pulumi-metabase/sdk/go/metabase"
-//     "github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+//   "github.com/pulumi/pulumi-metabase/sdk/go/metabase"
+//   "github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 // )
 //
 // func main() {
-//     pulumi.Run(func(ctx *pulumi.Context) error {
-//         metabaseService, err := metabase.Metabase(ctx, "demo", nil)
-//         if err != nil {
-//             return err
-//         }
+//   pulumi.Run(func(ctx *pulumi.Context) error {
+//     metabaseService, err := metabase.NewMetabase(ctx, "metabaseService", nil)
+//     if err != nil {
+//       return err
+//     }
+//     ctx.Export("url", metabaseService.DnsName)
+//     return nil
+//   })
+// }
+// ```
+// {{ /example }}
+// ### Custom Domain & Networking
 //
-//         ctx.Export("url", metabaseService.DnsName)
+// ```go
+// package main
 //
-//         return nil
+// import (
+//   "github.com/pulumi/pulumi-metabase/sdk/go/metabase"
+//   "github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+// )
+//
+// func main() {
+//   pulumi.Run(func(ctx *pulumi.Context) error {
+//     metabaseService, err := metabase.NewMetabase(ctx, "metabaseService", &metabase.MetabaseArgs{
+//       VpcId: pulumi.String("vpc-123"),
+//       Networking: &metabase.NetworkingArgs{
+//         EcsSubnetIds: pulumi.StringArray{
+//           pulumi.String("subnet-123"),
+//           pulumi.String("subnet-456"),
+//         },
+//         DbSubnetIds: pulumi.StringArray{
+//           pulumi.String("subnet-789"),
+//           pulumi.String("subnet-abc"),
+//         },
+//         LbSubnetIds: pulumi.StringArray{
+//           pulumi.String("subnet-def"),
+//           pulumi.String("subnet-ghi"),
+//         },
+//       },
+//       Domain: &metabase.CustomDomainArgs{
+//         HostedZoneName: pulumi.String("example.com"),
+//         DomainName:     pulumi.String("metabase.example.com"),
+//       },
 //     })
+//     if err != nil {
+//       return err
+//     }
+//     ctx.Export("url", metabaseService.DnsName)
+//     return nil
+//   })
 // }
 // ```
 // {{ /example }}
