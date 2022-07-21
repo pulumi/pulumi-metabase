@@ -1,0 +1,13 @@
+name: metabase-yaml
+runtime: yaml
+resources:
+    metabaseService:
+        type: "metabase:index:Metabase"
+        properties:
+            vpcId: "vpc-123"
+            networking:
+                ecsSubnetIds: [ "subnet-123", "subnet-456" ]
+                dbSubnetIds: [ "subnet-789", "subnet-abc" ]
+                lbSubnetIds: [ "subnet-def", "subnet-ghi" ]
+outputs:
+    url: ${metabaseService.dnsName}

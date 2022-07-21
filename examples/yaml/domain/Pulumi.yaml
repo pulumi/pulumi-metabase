@@ -1,0 +1,12 @@
+name: metabase-yaml
+runtime: yaml
+resources:
+    metabaseService:
+        type: "metabase:index:Metabase"
+        properties:
+            vpcId: "vpc-123"
+            domain:
+                hostedZoneName: "example.com"
+                domainName: "metabase.example.com"
+outputs:
+    url: ${metabaseService.dnsName}

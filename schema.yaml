@@ -43,13 +43,13 @@ resources:
       ## Example Usage
 
       {{% example %}}
-      ### Simple
+      ### Default
 
       ```typescript
+      import * as pulumi from "@pulumi/pulumi";
       import * as metabase from "@pulumi/metabase";
 
-      const metabaseService = new metabase.Metabase("demo", {});
-
+      const metabaseService = new metabase.Metabase("metabaseService", {});
       export const url = metabaseService.dnsName;
       ```
 
@@ -57,48 +57,45 @@ resources:
       import pulumi
       import pulumi_metabase as metabase
 
-      metabaseService = metabase.Metabase('demo')
-
-      pulumi.export('url', metabaseService.dns_name)
+      metabase_service = metabase.Metabase("metabaseService")
+      pulumi.export("url", metabase_service.dns_name)
       ```
 
       ```go
       package main
 
       import (
-          "github.com/pulumi/pulumi-metabase/sdk/go/metabase"
-          "github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+        "github.com/pulumi/pulumi-metabase/sdk/go/metabase"
+        "github.com/pulumi/pulumi/sdk/v3/go/pulumi"
       )
 
       func main() {
-          pulumi.Run(func(ctx *pulumi.Context) error {
-              metabaseService, err := metabase.Metabase(ctx, "demo", nil)
-              if err != nil {
-                  return err
-              }
-
-              ctx.Export("url", metabaseService.DnsName)
-
-              return nil
-          })
+        pulumi.Run(func(ctx *pulumi.Context) error {
+          metabaseService, err := metabase.NewMetabase(ctx, "metabaseService", nil)
+          if err != nil {
+            return err
+          }
+          ctx.Export("url", metabaseService.DnsName)
+          return nil
+        })
       }
       ```
 
       ```csharp
       using Pulumi;
-      using Pulumi.Metabase;
-      using Pulumi.Metabase.Inputs;
+      using Metabase = Pulumi.Metabase;
 
       class MyStack : Stack
       {
           public MyStack()
           {
-              var metabaseService = new Metabase("demo", new MetabaseArgs());
-
-              this.Url = Output.Create<string>(metabaseService.DnsName);
+              var metabaseService = new Metabase.Metabase("metabaseService", new Metabase.MetabaseArgs
+              {
+              });
+              this.Url = metabaseService.DnsName;
           }
 
-          [Output]
+          [Output("url")]
           public Output<string> Url { get; set; }
       }
       ```
@@ -109,6 +106,167 @@ resources:
       resources:
           metabaseService:
               type: "metabase:index:Metabase"
+      outputs:
+          url: ${metabaseService.dnsName}
+      ```
+      {{ /example }}
+
+      {{% example %}}
+      ### Custom Domain & Networking
+
+      ```typescript
+      import * as pulumi from "@pulumi/pulumi";
+      import * as metabase from "@pulumi/metabase";
+
+      const metabaseService = new metabase.Metabase("metabaseService", {
+          vpcId: "vpc-123",
+          networking: {
+              ecsSubnetIds: [
+                  "subnet-123",
+                  "subnet-456",
+              ],
+              dbSubnetIds: [
+                  "subnet-789",
+                  "subnet-abc",
+              ],
+              lbSubnetIds: [
+                  "subnet-def",
+                  "subnet-ghi",
+              ],
+          },
+          domain: {
+              hostedZoneName: "example.com",
+              domainName: "metabase.example.com",
+          },
+      });
+      export const url = metabaseService.dnsName;
+      ```
+
+      ```python
+      import pulumi
+      import pulumi_metabase as metabase
+
+      metabase_service = metabase.Metabase("metabaseService",
+          vpc_id="vpc-123",
+          networking=metabase.NetworkingArgs(
+              ecs_subnet_ids=[
+                  "subnet-123",
+                  "subnet-456",
+              ],
+              db_subnet_ids=[
+                  "subnet-789",
+                  "subnet-abc",
+              ],
+              lb_subnet_ids=[
+                  "subnet-def",
+                  "subnet-ghi",
+              ],
+          ),
+          domain=metabase.CustomDomainArgs(
+              hosted_zone_name="example.com",
+              domain_name="metabase.example.com",
+          ))
+      pulumi.export("url", metabase_service.dns_name)
+      ```
+
+      ```go
+      package main
+
+      import (
+        "github.com/pulumi/pulumi-metabase/sdk/go/metabase"
+        "github.com/pulumi/pulumi/sdk/v3/go/pulumi"
+      )
+
+      func main() {
+        pulumi.Run(func(ctx *pulumi.Context) error {
+          metabaseService, err := metabase.NewMetabase(ctx, "metabaseService", &metabase.MetabaseArgs{
+            VpcId: pulumi.String("vpc-123"),
+            Networking: &metabase.NetworkingArgs{
+              EcsSubnetIds: pulumi.StringArray{
+                pulumi.String("subnet-123"),
+                pulumi.String("subnet-456"),
+              },
+              DbSubnetIds: pulumi.StringArray{
+                pulumi.String("subnet-789"),
+                pulumi.String("subnet-abc"),
+              },
+              LbSubnetIds: pulumi.StringArray{
+                pulumi.String("subnet-def"),
+                pulumi.String("subnet-ghi"),
+              },
+            },
+            Domain: &metabase.CustomDomainArgs{
+              HostedZoneName: pulumi.String("example.com"),
+              DomainName:     pulumi.String("metabase.example.com"),
+            },
+          })
+          if err != nil {
+            return err
+          }
+          ctx.Export("url", metabaseService.DnsName)
+          return nil
+        })
+      }
+      ```
+
+      ```csharp
+      using Pulumi;
+      using Metabase = Pulumi.Metabase;
+
+      class MyStack : Stack
+      {
+          public MyStack()
+          {
+              var metabaseService = new Metabase.Metabase("metabaseService", new Metabase.MetabaseArgs
+              {
+                  VpcId = "vpc-123",
+                  Networking = new Metabase.Inputs.NetworkingArgs
+                  {
+                      EcsSubnetIds =
+                      {
+                          "subnet-123",
+                          "subnet-456",
+                      },
+                      DbSubnetIds =
+                      {
+                          "subnet-789",
+                          "subnet-abc",
+                      },
+                      LbSubnetIds =
+                      {
+                          "subnet-def",
+                          "subnet-ghi",
+                      },
+                  },
+                  Domain = new Metabase.Inputs.CustomDomainArgs
+                  {
+                      HostedZoneName = "example.com",
+                      DomainName = "metabase.example.com",
+                  },
+              });
+              this.Url = metabaseService.DnsName;
+          }
+
+          [Output("url")]
+          public Output<string> Url { get; set; }
+      }
+      ```
+
+      ```yaml
+      name: metabase-yaml
+      runtime: yaml
+      resources:
+          metabaseService:
+              type: "metabase:index:Metabase"
+              properties:
+                  vpcId: "vpc-123"
+                  networking:
+                      ecsSubnetIds: [ "subnet-123", "subnet-456" ]
+                      dbSubnetIds: [ "subnet-789", "subnet-abc" ]
+                      lbSubnetIds: [ "subnet-def", "subnet-ghi" ]
+                  domain:
+                      hostedZoneName: "example.com"
+                      domainName: "metabase.example.com"
       outputs:
           url: ${metabaseService.dnsName}
       ```

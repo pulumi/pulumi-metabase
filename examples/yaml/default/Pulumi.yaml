@@ -1,0 +1,7 @@
+name: metabase-yaml
+runtime: yaml
+resources:
+    metabaseService:
+        type: "metabase:index:Metabase"
+outputs:
+    url: ${metabaseService.dnsName}
