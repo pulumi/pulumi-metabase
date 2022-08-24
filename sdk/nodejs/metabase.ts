@@ -90,6 +90,7 @@ export class Metabase extends pulumi.ComponentResource {
         let resourceInputs: pulumi.Inputs = {};
         opts = opts || {};
         if (!opts.id) {
+            resourceInputs["database"] = args ? (args.database ? pulumi.output(args.database).apply(inputs.databaseArgsProvideDefaults) : undefined) : undefined;
             resourceInputs["domain"] = args ? args.domain : undefined;
             resourceInputs["metabaseVersion"] = args ? args.metabaseVersion : undefined;
             resourceInputs["networking"] = args ? args.networking : undefined;
@@ -109,6 +110,10 @@ export class Metabase extends pulumi.ComponentResource {
  * The set of arguments for constructing a Metabase resource.
  */
 export interface MetabaseArgs {
+    /**
+     * Optional arguments for configuring your RDS instance.
+     */
+    database?: pulumi.Input<inputs.DatabaseArgs>;
     /**
      * Optionally provide a hosted zone and domain name for the Metabase service.
      */

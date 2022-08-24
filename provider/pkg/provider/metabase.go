@@ -46,13 +46,18 @@ type Networking struct {
 	LBSubnetIDs  pulumi.StringArrayInput `pulumi:"lbSubnetIds"`
 }
 
+type Database struct {
+	EngineVersion pulumi.StringInput `pulumi:"engineVersion"`
+}
+
 type MetabaseArgs struct {
 	VpcID           pulumi.StringInput `pulumi:"vpcId"`
 	MetabaseVersion pulumi.StringInput `pulumi:"metabaseVersion"`
 
-	// Additional args [WIP]
-	Domain  CustomDomain `pulumi:"domain"`
-	Network Networking   `pulumi:"networking"`
+	// Additional args
+	Domain   CustomDomain `pulumi:"domain"`
+	Network  Networking   `pulumi:"networking"`
+	Database Database     `pulumi:"database"`
 }
 
 type Metabase struct {
@@ -174,7 +179,7 @@ func NewMetabase(ctx *pulumi.Context, name string, args *MetabaseArgs, opts ...p
 	}
 
 	// Create the MySQL cluster.
-	metabaseMysqlCluster, err := metabaseBuilder.NewMySQLCluster(dbSubnetIDs, metabasePassword, metabaseSecurityGroup.ID())
+	metabaseMysqlCluster, err := metabaseBuilder.NewMySQLCluster(dbSubnetIDs, metabasePassword, metabaseSecurityGroup.ID(), args.Database.EngineVersion)
 	if err != nil {
 		return nil, errors.Wrap(err, "Creating MySQL Cluster")
 	}

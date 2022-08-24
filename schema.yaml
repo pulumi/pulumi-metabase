@@ -2,6 +2,19 @@
 ---
 name: metabase
 types:
+  metabase:index:Database:
+    description: The options for configuring your database.
+    type: object
+    properties:
+      engineVersion:
+        description: |
+          The database engine version. Updating this argument results in an outage. See the
+          [Aurora MySQL](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html)
+          documentation for your configured engine to determine this value. For example with Aurora MySQL 2,
+          a potential value for this argument is 5.7.mysql_aurora.2.03.2. The value can contain a partial version
+          where supported by the API.
+        type: string
+        default: "5.7.mysql_aurora.2.08.3"
   metabase:index:Networking:
     description: The options for networking.
     type: object
@@ -283,6 +296,9 @@ resources:
       domain:
         description: Optionally provide a hosted zone and domain name for the Metabase service.
         $ref: "#/types/metabase:index:CustomDomain"
+      database:
+        description: Optional arguments for configuring your RDS instance.
+        $ref: "#/types/metabase:index:Database"
       metabaseVersion:
         description: The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
         type: string

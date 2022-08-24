@@ -2,6 +2,7 @@ package metabase
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/acm"
 	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ec2"
@@ -22,10 +23,11 @@ type MetabaseResourceConstructor struct {
 }
 
 func NewMetabaseResourceConstructor(ctx *pulumi.Context, name string, opts ...pulumi.ResourceOption) *MetabaseResourceConstructor {
+	lowerName := strings.ToLower(name)
 	return &MetabaseResourceConstructor{
 		ctx:              ctx,
-		name:             name,
-		baseResourceName: fmt.Sprintf("%s-metabase", name),
+		name:             lowerName,
+		baseResourceName: fmt.Sprintf("%s-metabase", lowerName),
 		opts:             opts,
 	}
 }
@@ -125,12 +127,16 @@ func (m *MetabaseResourceConstructor) NewMetabasePassword() (*random.RandomStrin
 	}, m.opts...)
 }
 
-func (m *MetabaseResourceConstructor) NewMySQLCluster(dbSubnetIDs pulumi.StringArrayInput, metabasePassword *random.RandomString, metabaseSecurityGroupID pulumi.IDOutput) (*rds.Cluster, error) {
+func (m *MetabaseResourceConstructor) NewMySQLCluster(dbSubnetIDs pulumi.StringArrayInput, metabasePassword *random.RandomString, metabaseSecurityGroupID pulumi.IDOutput, engineVersion pulumi.StringInput) (*rds.Cluster, error) {
 	metabaseMysqlSubnetGroup, err := rds.NewSubnetGroup(m.ctx, m.baseResourceName, &rds.SubnetGroupArgs{
 		SubnetIds: dbSubnetIDs,
 	}, m.opts...)
 	if err != nil {
 		return nil, err
+	}
+
+	if engineVersion == nil {
+		engineVersion = pulumi.String("5.7.mysql_aurora.2.08.3")
 	}
 
 	clusterArgs := &rds.ClusterArgs{
@@ -140,7 +146,7 @@ func (m *MetabaseResourceConstructor) NewMySQLCluster(dbSubnetIDs pulumi.StringA
 		MasterPassword:          metabasePassword.Result,
 		Engine:                  pulumi.String("aurora-mysql"),
 		EngineMode:              pulumi.String("serverless"),
-		EngineVersion:           pulumi.String("5.7.mysql_aurora.2.07.1"),
+		EngineVersion:           engineVersion,
 		VpcSecurityGroupIds:     pulumi.ToStringArrayOutput([]pulumi.StringOutput{metabaseSecurityGroupID.ToStringOutput()}),
 		FinalSnapshotIdentifier: pulumi.Sprintf("%smetabasefinalsnapshot", m.name),
 		EnableHttpEndpoint:      pulumi.BoolPtr(true),
