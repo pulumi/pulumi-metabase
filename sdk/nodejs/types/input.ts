@@ -4,12 +4,37 @@
 import * as pulumi from "@pulumi/pulumi";
 import { input as inputs, output as outputs } from "../types";
 
+import * as utilities from "../utilities";
+
 /**
  * Options for setting a custom domain.
  */
 export interface CustomDomainArgs {
     domainName?: pulumi.Input<string>;
     hostedZoneName?: pulumi.Input<string>;
+}
+
+/**
+ * The options for configuring your database.
+ */
+export interface DatabaseArgs {
+    /**
+     * The database engine version. Updating this argument results in an outage. See the
+     * [Aurora MySQL](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html)
+     * documentation for your configured engine to determine this value. For example with Aurora MySQL 2,
+     * a potential value for this argument is 5.7.mysql_aurora.2.03.2. The value can contain a partial version
+     * where supported by the API.
+     */
+    engineVersion?: pulumi.Input<string>;
+}
+/**
+ * databaseArgsProvideDefaults sets the appropriate defaults for DatabaseArgs
+ */
+export function databaseArgsProvideDefaults(val: DatabaseArgs): DatabaseArgs {
+    return {
+        ...val,
+        engineVersion: (val.engineVersion) ?? "5.7.mysql_aurora.2.08.3",
+    };
 }
 
 /**

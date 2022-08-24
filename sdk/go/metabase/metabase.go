@@ -98,6 +98,9 @@ func NewMetabase(ctx *pulumi.Context,
 		args = &MetabaseArgs{}
 	}
 
+	if args.Database != nil {
+		args.Database = args.Database.ToDatabasePtrOutput().ApplyT(func(v *Database) *Database { return v.Defaults() }).(DatabasePtrOutput)
+	}
 	var resource Metabase
 	err := ctx.RegisterRemoteComponentResource("metabase:index:Metabase", name, args, &resource, opts...)
 	if err != nil {
@@ -107,6 +110,8 @@ func NewMetabase(ctx *pulumi.Context,
 }
 
 type metabaseArgs struct {
+	// Optional arguments for configuring your RDS instance.
+	Database *Database `pulumi:"database"`
 	// Optionally provide a hosted zone and domain name for the Metabase service.
 	Domain *CustomDomain `pulumi:"domain"`
 	// The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
@@ -119,6 +124,8 @@ type metabaseArgs struct {
 
 // The set of arguments for constructing a Metabase resource.
 type MetabaseArgs struct {
+	// Optional arguments for configuring your RDS instance.
+	Database DatabasePtrInput
 	// Optionally provide a hosted zone and domain name for the Metabase service.
 	Domain CustomDomainPtrInput
 	// The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.

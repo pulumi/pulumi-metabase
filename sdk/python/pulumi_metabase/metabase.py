@@ -14,17 +14,21 @@ __all__ = ['MetabaseArgs', 'Metabase']
 @pulumi.input_type
 class MetabaseArgs:
     def __init__(__self__, *,
+                 database: Optional[pulumi.Input['DatabaseArgs']] = None,
                  domain: Optional[pulumi.Input['CustomDomainArgs']] = None,
                  metabase_version: Optional[pulumi.Input[str]] = None,
                  networking: Optional[pulumi.Input['NetworkingArgs']] = None,
                  vpc_id: Optional[pulumi.Input[str]] = None):
         """
         The set of arguments for constructing a Metabase resource.
+        :param pulumi.Input['DatabaseArgs'] database: Optional arguments for configuring your RDS instance.
         :param pulumi.Input['CustomDomainArgs'] domain: Optionally provide a hosted zone and domain name for the Metabase service.
         :param pulumi.Input[str] metabase_version: The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
         :param pulumi.Input['NetworkingArgs'] networking: Optionally provide specific subnet IDs to run the different resources of Metabase.
         :param pulumi.Input[str] vpc_id: The VPC to use for the Metabase service. If left blank then the default VPC will be used.
         """
+        if database is not None:
+            pulumi.set(__self__, "database", database)
         if domain is not None:
             pulumi.set(__self__, "domain", domain)
         if metabase_version is not None:
@@ -33,6 +37,18 @@ class MetabaseArgs:
             pulumi.set(__self__, "networking", networking)
         if vpc_id is not None:
             pulumi.set(__self__, "vpc_id", vpc_id)
+
+    @property
+    @pulumi.getter
+    def database(self) -> Optional[pulumi.Input['DatabaseArgs']]:
+        """
+        Optional arguments for configuring your RDS instance.
+        """
+        return pulumi.get(self, "database")
+
+    @database.setter
+    def database(self, value: Optional[pulumi.Input['DatabaseArgs']]):
+        pulumi.set(self, "database", value)
 
     @property
     @pulumi.getter
@@ -88,6 +104,7 @@ class Metabase(pulumi.ComponentResource):
     def __init__(__self__,
                  resource_name: str,
                  opts: Optional[pulumi.ResourceOptions] = None,
+                 database: Optional[pulumi.Input[pulumi.InputType['DatabaseArgs']]] = None,
                  domain: Optional[pulumi.Input[pulumi.InputType['CustomDomainArgs']]] = None,
                  metabase_version: Optional[pulumi.Input[str]] = None,
                  networking: Optional[pulumi.Input[pulumi.InputType['NetworkingArgs']]] = None,
@@ -144,6 +161,7 @@ class Metabase(pulumi.ComponentResource):
 
         :param str resource_name: The name of the resource.
         :param pulumi.ResourceOptions opts: Options for the resource.
+        :param pulumi.Input[pulumi.InputType['DatabaseArgs']] database: Optional arguments for configuring your RDS instance.
         :param pulumi.Input[pulumi.InputType['CustomDomainArgs']] domain: Optionally provide a hosted zone and domain name for the Metabase service.
         :param pulumi.Input[str] metabase_version: The version of Metabase to run - used as a tag on the `metabase/metabase` Dockerhub image.
         :param pulumi.Input[pulumi.InputType['NetworkingArgs']] networking: Optionally provide specific subnet IDs to run the different resources of Metabase.
@@ -219,6 +237,7 @@ class Metabase(pulumi.ComponentResource):
     def _internal_init(__self__,
                  resource_name: str,
                  opts: Optional[pulumi.ResourceOptions] = None,
+                 database: Optional[pulumi.Input[pulumi.InputType['DatabaseArgs']]] = None,
                  domain: Optional[pulumi.Input[pulumi.InputType['CustomDomainArgs']]] = None,
                  metabase_version: Optional[pulumi.Input[str]] = None,
                  networking: Optional[pulumi.Input[pulumi.InputType['NetworkingArgs']]] = None,
@@ -237,6 +256,7 @@ class Metabase(pulumi.ComponentResource):
                 raise TypeError('__props__ is only valid when passed in combination with a valid opts.id to get an existing resource')
             __props__ = MetabaseArgs.__new__(MetabaseArgs)
 
+            __props__.__dict__["database"] = database
             __props__.__dict__["domain"] = domain
             __props__.__dict__["metabase_version"] = metabase_version
             __props__.__dict__["networking"] = networking

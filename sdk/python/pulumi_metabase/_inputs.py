@@ -10,6 +10,7 @@ from . import _utilities
 
 __all__ = [
     'CustomDomainArgs',
+    'DatabaseArgs',
     'NetworkingArgs',
 ]
 
@@ -43,6 +44,40 @@ class CustomDomainArgs:
     @hosted_zone_name.setter
     def hosted_zone_name(self, value: Optional[pulumi.Input[str]]):
         pulumi.set(self, "hosted_zone_name", value)
+
+
+@pulumi.input_type
+class DatabaseArgs:
+    def __init__(__self__, *,
+                 engine_version: Optional[pulumi.Input[str]] = None):
+        """
+        The options for configuring your database.
+        :param pulumi.Input[str] engine_version: The database engine version. Updating this argument results in an outage. See the
+               [Aurora MySQL](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html)
+               documentation for your configured engine to determine this value. For example with Aurora MySQL 2,
+               a potential value for this argument is 5.7.mysql_aurora.2.03.2. The value can contain a partial version
+               where supported by the API.
+        """
+        if engine_version is None:
+            engine_version = '5.7.mysql_aurora.2.08.3'
+        if engine_version is not None:
+            pulumi.set(__self__, "engine_version", engine_version)
+
+    @property
+    @pulumi.getter(name="engineVersion")
+    def engine_version(self) -> Optional[pulumi.Input[str]]:
+        """
+        The database engine version. Updating this argument results in an outage. See the
+        [Aurora MySQL](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html)
+        documentation for your configured engine to determine this value. For example with Aurora MySQL 2,
+        a potential value for this argument is 5.7.mysql_aurora.2.03.2. The value can contain a partial version
+        where supported by the API.
+        """
+        return pulumi.get(self, "engine_version")
+
+    @engine_version.setter
+    def engine_version(self, value: Optional[pulumi.Input[str]]):
+        pulumi.set(self, "engine_version", value)
 
 
 @pulumi.input_type

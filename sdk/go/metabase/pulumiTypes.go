@@ -161,6 +161,175 @@ func (o CustomDomainPtrOutput) HostedZoneName() pulumi.StringPtrOutput {
 	}).(pulumi.StringPtrOutput)
 }
 
+// The options for configuring your database.
+type Database struct {
+	// The database engine version. Updating this argument results in an outage. See the
+	// [Aurora MySQL](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html)
+	// documentation for your configured engine to determine this value. For example with Aurora MySQL 2,
+	// a potential value for this argument is 5.7.mysql_aurora.2.03.2. The value can contain a partial version
+	// where supported by the API.
+	EngineVersion *string `pulumi:"engineVersion"`
+}
+
+// Defaults sets the appropriate defaults for Database
+func (val *Database) Defaults() *Database {
+	if val == nil {
+		return nil
+	}
+	tmp := *val
+	if isZero(tmp.EngineVersion) {
+		engineVersion_ := "5.7.mysql_aurora.2.08.3"
+		tmp.EngineVersion = &engineVersion_
+	}
+	return &tmp
+}
+
+// DatabaseInput is an input type that accepts DatabaseArgs and DatabaseOutput values.
+// You can construct a concrete instance of `DatabaseInput` via:
+//
+//          DatabaseArgs{...}
+type DatabaseInput interface {
+	pulumi.Input
+
+	ToDatabaseOutput() DatabaseOutput
+	ToDatabaseOutputWithContext(context.Context) DatabaseOutput
+}
+
+// The options for configuring your database.
+type DatabaseArgs struct {
+	// The database engine version. Updating this argument results in an outage. See the
+	// [Aurora MySQL](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html)
+	// documentation for your configured engine to determine this value. For example with Aurora MySQL 2,
+	// a potential value for this argument is 5.7.mysql_aurora.2.03.2. The value can contain a partial version
+	// where supported by the API.
+	EngineVersion pulumi.StringPtrInput `pulumi:"engineVersion"`
+}
+
+func (DatabaseArgs) ElementType() reflect.Type {
+	return reflect.TypeOf((*Database)(nil)).Elem()
+}
+
+func (i DatabaseArgs) ToDatabaseOutput() DatabaseOutput {
+	return i.ToDatabaseOutputWithContext(context.Background())
+}
+
+func (i DatabaseArgs) ToDatabaseOutputWithContext(ctx context.Context) DatabaseOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DatabaseOutput)
+}
+
+func (i DatabaseArgs) ToDatabasePtrOutput() DatabasePtrOutput {
+	return i.ToDatabasePtrOutputWithContext(context.Background())
+}
+
+func (i DatabaseArgs) ToDatabasePtrOutputWithContext(ctx context.Context) DatabasePtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DatabaseOutput).ToDatabasePtrOutputWithContext(ctx)
+}
+
+// DatabasePtrInput is an input type that accepts DatabaseArgs, DatabasePtr and DatabasePtrOutput values.
+// You can construct a concrete instance of `DatabasePtrInput` via:
+//
+//          DatabaseArgs{...}
+//
+//  or:
+//
+//          nil
+type DatabasePtrInput interface {
+	pulumi.Input
+
+	ToDatabasePtrOutput() DatabasePtrOutput
+	ToDatabasePtrOutputWithContext(context.Context) DatabasePtrOutput
+}
+
+type databasePtrType DatabaseArgs
+
+func DatabasePtr(v *DatabaseArgs) DatabasePtrInput {
+	return (*databasePtrType)(v)
+}
+
+func (*databasePtrType) ElementType() reflect.Type {
+	return reflect.TypeOf((**Database)(nil)).Elem()
+}
+
+func (i *databasePtrType) ToDatabasePtrOutput() DatabasePtrOutput {
+	return i.ToDatabasePtrOutputWithContext(context.Background())
+}
+
+func (i *databasePtrType) ToDatabasePtrOutputWithContext(ctx context.Context) DatabasePtrOutput {
+	return pulumi.ToOutputWithContext(ctx, i).(DatabasePtrOutput)
+}
+
+// The options for configuring your database.
+type DatabaseOutput struct{ *pulumi.OutputState }
+
+func (DatabaseOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((*Database)(nil)).Elem()
+}
+
+func (o DatabaseOutput) ToDatabaseOutput() DatabaseOutput {
+	return o
+}
+
+func (o DatabaseOutput) ToDatabaseOutputWithContext(ctx context.Context) DatabaseOutput {
+	return o
+}
+
+func (o DatabaseOutput) ToDatabasePtrOutput() DatabasePtrOutput {
+	return o.ToDatabasePtrOutputWithContext(context.Background())
+}
+
+func (o DatabaseOutput) ToDatabasePtrOutputWithContext(ctx context.Context) DatabasePtrOutput {
+	return o.ApplyTWithContext(ctx, func(_ context.Context, v Database) *Database {
+		return &v
+	}).(DatabasePtrOutput)
+}
+
+// The database engine version. Updating this argument results in an outage. See the
+// [Aurora MySQL](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html)
+// documentation for your configured engine to determine this value. For example with Aurora MySQL 2,
+// a potential value for this argument is 5.7.mysql_aurora.2.03.2. The value can contain a partial version
+// where supported by the API.
+func (o DatabaseOutput) EngineVersion() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v Database) *string { return v.EngineVersion }).(pulumi.StringPtrOutput)
+}
+
+type DatabasePtrOutput struct{ *pulumi.OutputState }
+
+func (DatabasePtrOutput) ElementType() reflect.Type {
+	return reflect.TypeOf((**Database)(nil)).Elem()
+}
+
+func (o DatabasePtrOutput) ToDatabasePtrOutput() DatabasePtrOutput {
+	return o
+}
+
+func (o DatabasePtrOutput) ToDatabasePtrOutputWithContext(ctx context.Context) DatabasePtrOutput {
+	return o
+}
+
+func (o DatabasePtrOutput) Elem() DatabaseOutput {
+	return o.ApplyT(func(v *Database) Database {
+		if v != nil {
+			return *v
+		}
+		var ret Database
+		return ret
+	}).(DatabaseOutput)
+}
+
+// The database engine version. Updating this argument results in an outage. See the
+// [Aurora MySQL](https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/AuroraMySQL.Updates.html)
+// documentation for your configured engine to determine this value. For example with Aurora MySQL 2,
+// a potential value for this argument is 5.7.mysql_aurora.2.03.2. The value can contain a partial version
+// where supported by the API.
+func (o DatabasePtrOutput) EngineVersion() pulumi.StringPtrOutput {
+	return o.ApplyT(func(v *Database) *string {
+		if v == nil {
+			return nil
+		}
+		return v.EngineVersion
+	}).(pulumi.StringPtrOutput)
+}
+
 // The options for networking.
 type Networking struct {
 	// The subnets to use for the RDS instance.
@@ -342,10 +511,14 @@ func (o NetworkingPtrOutput) LbSubnetIds() pulumi.StringArrayOutput {
 func init() {
 	pulumi.RegisterInputType(reflect.TypeOf((*CustomDomainInput)(nil)).Elem(), CustomDomainArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*CustomDomainPtrInput)(nil)).Elem(), CustomDomainArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*DatabaseInput)(nil)).Elem(), DatabaseArgs{})
+	pulumi.RegisterInputType(reflect.TypeOf((*DatabasePtrInput)(nil)).Elem(), DatabaseArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*NetworkingInput)(nil)).Elem(), NetworkingArgs{})
 	pulumi.RegisterInputType(reflect.TypeOf((*NetworkingPtrInput)(nil)).Elem(), NetworkingArgs{})
 	pulumi.RegisterOutputType(CustomDomainOutput{})
 	pulumi.RegisterOutputType(CustomDomainPtrOutput{})
+	pulumi.RegisterOutputType(DatabaseOutput{})
+	pulumi.RegisterOutputType(DatabasePtrOutput{})
 	pulumi.RegisterOutputType(NetworkingOutput{})
 	pulumi.RegisterOutputType(NetworkingPtrOutput{})
 }

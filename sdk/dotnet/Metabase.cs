@@ -129,6 +129,12 @@ namespace Pulumi.Metabase
     public sealed class MetabaseArgs : Pulumi.ResourceArgs
     {
         /// <summary>
+        /// Optional arguments for configuring your RDS instance.
+        /// </summary>
+        [Input("database")]
+        public Input<Inputs.DatabaseArgs>? Database { get; set; }
+
+        /// <summary>
         /// Optionally provide a hosted zone and domain name for the Metabase service.
         /// </summary>
         [Input("domain")]
